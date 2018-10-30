@@ -1,2 +1,2 @@
 # image-similarity
-Library to most similar products based on images
+Library to identify most similar products based on images
