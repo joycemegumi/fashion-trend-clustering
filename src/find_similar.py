@@ -26,13 +26,14 @@ from utils import utils
 
 class find_similar():
     
-    def __init__(self):
+    def __init__(self, dpt_num_department=371):
+        self.dpt_num_department = dpt_num_department
         self.features = []
         self.similar_images = {}
         self.similar_models = {}
     
     #method to calculate most similar products based on a scoring system
-    def _similar_models(self, k):
+    def _similar_models(self, k, save_similar_models=False):
         #first build a pixl ID:models most similar to that ID
         self.similar_pixl_model = {self.images[i].split('_')[1][:-4]: [self.images[j].split('_')[0] for j in self.NN[i][1:] if self.images[j].split('_')[0] != self.images[i].split('_')[0]] for i in range(len(self.images))}
         
@@ -53,6 +54,16 @@ class find_similar():
             sorted_by_value = sorted(score.items(), key=lambda kv: kv[1], reverse=True)
             self.similar_models[mdl] = [i[0] for i in sorted_by_value][:k]
             
+        #if we want to save the similar models dictionary
+        if save_similar_models:
+            path = parentdir + '\\data\\trained_models\\'
+            if not os.path.exists(path):
+                os.makedirs(path)
+            with open(path + 'similar_models_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
+                pickle.dump(self.similar_models, file, protocol=pickle.HIGHEST_PROTOCOL)
+            
+            print('Dictionary of similar models saved!')
+            
     #method to calculate the features of every image
     def _extract_features(self):
         #load VGG19 model
@@ -72,6 +83,7 @@ class find_similar():
         
         #loop through the images, to extract their features
         print('Looping through the images')      
+        ki = 0
         for f in self.images:
             path = folder + '\\' + f
             #read the image
@@ -85,16 +97,20 @@ class find_similar():
             #extract and flatten the features
             self.features.append(model.predict(img).flatten())
             
+            ki += 1
+            if ki % 10 == 1:
+                print('Features calculated for', ki, 'images')
+            
     #main method, to extract features and find nearest neighbors
-    def main(self, dpt_num_department=371, k=5, algorithm='brute', metric='cosine',
-             save_features=False):
-        self.dpt_num_department=dpt_num_department
+    def main(self, k=5, algorithm='brute', metric='cosine',
+             save_features=False, save_similar_models=False):
+
         #extract the features
         self._extract_features()
         
         X = np.array(self.features)
         print('Calculating nearest neighbors')
-        kNN = NearestNeighbors(n_neighbors=k+20, algorithm=algorithm, metric=metric).fit(X)
+        kNN = NearestNeighbors(n_neighbors=np.min([50, X.shape[0]]), algorithm=algorithm, metric=metric).fit(X)
         _, self.NN = kNN.kneighbors(X)
         
         #if we want to save the features
@@ -107,8 +123,7 @@ class find_similar():
             with open(path + 'training_images_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
                 pickle.dump(self.images, file, protocol=pickle.HIGHEST_PROTOCOL)
             with open(path + 'training_mdl_to_pixl_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
-                pickle.dump(self.mdl_to_pixl, file, protocol=pickle.HIGHEST_PROTOCOL)
-                
+                pickle.dump(self.mdl_to_pixl, file, protocol=pickle.HIGHEST_PROTOCOL)            
             print('Features saved!')
         
         #extract the similar images (from another model) in a dictionary pixl ID: list of most similar pixl IDs
@@ -116,7 +131,7 @@ class find_similar():
         self.similar_images = {self.images[i].split('_')[1][:-4]: [self.images[j].split('_')[1][:-4] for j in self.NN[i][1:] if self.images[j].split('_')[0] != self.images[i].split('_')[0]][:k] for i in range(len(self.images))}
         
         #extract the similar models in a dictionary model ID: list of most similar models ID
-        self._similar_models(k=k)
+        self._similar_models(k=k, save_similar_models=save_similar_models)
         
     #method to plot some example of most similar products    
     def plot_similar(self, mdl=None):
@@ -136,6 +151,6 @@ class find_similar():
         self.x = path_to_similar_mdls
             
 if __name__ == '__main__':
-    sim = find_similar()
-    sim.main(k=8, dpt_num_department=371, save_features=True)
+    sim = find_similar(dpt_num_department=999)
+    sim.main(k=8, save_features=True)
     sim.plot_similar()

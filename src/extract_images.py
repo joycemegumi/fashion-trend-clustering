@@ -44,13 +44,19 @@ class extract_images():
         self.models = pd.read_csv(io.BytesIO(response['Body'].read()), 
                          sep=sep, header=header,
                          names=names, compression=compression)
+        print('Number of images of', len(self.models.index))
         
     #main method: loops through pixl IDs, and extract images 
-    def run(self, dpt_num_department=371, domain_id='0341', delete_images=True):
+    def run(self, dpt_num_department=371, domain_id='0341', delete_images=False,
+            last_downloaded=None):
         
         #extract the models/pixl IDs in a dataframe
         self._extract_IDs(dpt_num_department=dpt_num_department,
                           domain_id=domain_id)
+        
+        #if we want to start after the last pixl ID downloaded
+        if last_downloaded is not None:
+            self.models = self.models[self.models.index > self.models[self.models.id == last_downloaded].index[0]]
         
         folder = parentdir + '\\data\\dataset\\' + 'dpt_num_department_' + str(dpt_num_department)
         #if we delete previous images
@@ -87,5 +93,5 @@ class extract_images():
     
 if __name__ == '__main__':
     extracter = extract_images()
-    extracter.run(dpt_num_department=371, domain_id='0341')
+    extracter.run(dpt_num_department=0, domain_id='0341')
         

@@ -24,7 +24,8 @@ from utils import utils
 
 class search_catalog():
     
-    def __init__(self):
+    def __init__(self, dpt_num_department=371):
+        self.dpt_num_department = dpt_num_department
         self.model = None
     
     #method to load VGG19 model
@@ -34,7 +35,7 @@ class search_catalog():
         self.model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
     
     #method to load features of each product
-    def _load_features(self, dataset_augmentation=True, dpt_num_department=371):
+    def _load_features(self, dataset_augmentation=True):
         if dataset_augmentation:
             path_kNN = parentdir + '\\data\\trained_models\\training_features_augmented_'
             path_images = parentdir + '\\data\\trained_models\\training_images_augmented_'
@@ -42,13 +43,13 @@ class search_catalog():
             path_kNN = parentdir + '\\data\\trained_models\\training_features_'
             path_images = parentdir + '\\data\\trained_models\\training_images_'
             
-        with open(path_kNN + 'dpt_num_department_' + str(dpt_num_department) + '.pickle', 'rb') as file:
+        with open(path_kNN + 'dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
             self.kNN = pickle.load(file)
-        with open(path_images + 'dpt_num_department_' + str(dpt_num_department) + '.pickle', 'rb') as file:
+        with open(path_images + 'dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
             self.images = pickle.load(file)
         
     #method to calculate features for all images and augmented ones
-    def _calculate_augmented_features(self, k=5, flip=True, rotate=True, algorithm='brute', metric='cosine',
+    def _calculate_augmented_features(self, flip=True, rotate=True, algorithm='brute', metric='cosine',
                                       verbose=True, save_features=True):
         from scipy.ndimage import rotate
         from sklearn.neighbors import NearestNeighbors
@@ -70,7 +71,7 @@ class search_catalog():
         
         #loop through all the images
         print('Looping through the images')  
-        k=0
+        ki=0
         for f in self.true_images:
             path = folder + '\\' + f
             #read the image
@@ -99,14 +100,14 @@ class search_catalog():
                 self.images = self.images + [f[:-4] + '-r270.jpg']
                 self.features.append(calculate_features(rotate(img, angle=270)))
             
-            k += 1
-            if k % 10 == 1:
-                print('Features calculated for', k, 'images')
+            ki += 1
+            if ki % 10 == 1:
+                print('Features calculated for', ki, 'images')
         
         #run the knn algorithm
         X = np.array(self.features)
         print('Calculating nearest neighbors')
-        self.kNN = NearestNeighbors(n_neighbors=k+20, algorithm=algorithm, metric=metric).fit(X)
+        self.kNN = NearestNeighbors(n_neighbors=np.min([50, X.shape[0]]), algorithm=algorithm, metric=metric).fit(X)
         
         if save_features:
             path = parentdir + '\\data\\trained_models\\'
@@ -120,11 +121,10 @@ class search_catalog():
             print('Features saved!')
         
     #main method - identify most similar models
-    def run(self, image, k=5, dpt_num_department=371, load_model=True, load_features=True,
+    def run(self, image, k=5, load_model=True, load_features=True,
             dataset_augmentation=False):
         
         self.path_to_img = image
-        self.dpt_num_department=dpt_num_department
         
         #load the model
         if load_model:
@@ -133,13 +133,11 @@ class search_catalog():
         #we can either load the features, or calculate features for all images considering data augmentation
         if dataset_augmentation:
             if load_features:
-                self._load_features(dataset_augmentation=dataset_augmentation,
-                                    dpt_num_department=dpt_num_department)
+                self._load_features(dataset_augmentation=dataset_augmentation)
             else:
-                self._calculate_augmented_features(k=k, save_features=True)
+                self._calculate_augmented_features(save_features=True)
         else:
-            self._load_features(dataset_augmentation=dataset_augmentation,
-                                dpt_num_department=dpt_num_department)
+            self._load_features(dataset_augmentation=dataset_augmentation)
                   
         #load and preprocess the image
         img = preprocessing.image.load_img(image, target_size=(224, 224))     
@@ -175,8 +173,8 @@ if __name__=='__main__':
     image = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
 #    image = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
 #    image = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-    search = search_catalog()
-    search.run(image, dpt_num_department=371, load_features=True, dataset_augmentation=True)
+    search = search_catalog(dpt_num_department=371)
+    search.run(image, load_features=True, dataset_augmentation=True)
     search.plot_similar()
         
     
