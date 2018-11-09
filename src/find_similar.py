@@ -7,6 +7,8 @@ Inspired by: https://towardsdatascience.com/building-a-similar-images-finder-wit
 
 @author: AI team
 """
+import bz2
+import gzip
 import collections
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,7 +67,7 @@ class find_similar():
             print('Dictionary of similar models saved!')
             
     #method to calculate the features of every image
-    def _extract_features(self):
+    def _extract_features(self, save_progress=True, load_previous_features=True):
         #load VGG19 model
         print("Loading VGG19 pre-trained model...")
         base_model = VGG19(weights='imagenet')
@@ -82,9 +84,22 @@ class find_similar():
         self.pixl_to_mdl = {i.split('_')[1][:-4]:i.split('_')[0] for i in self.images}
         
         #loop through the images, to extract their features
+        
+        #if we save the progress, let's first extract the features saved the previous iteration
+        progress_path = parentdir + '\\data\\trained_models\\training_features_dpt_num_department_' + str(self.dpt_num_department) + '.pickle'
+        if load_previous_features:
+            if os.path.exists(progress_path):
+                with bz2.open(progress_path, 'rb') as file:
+                    self.features = pickle.load(file)
+                    ki = len(self.features)
+                    print('Begining at image number', ki)
+            else:
+                ki = 0
+        else:
+            ki = 0
+        
         print('Looping through the images')      
-        ki = 0
-        for f in self.images:
+        for f in self.images[ki:]:
             path = folder + '\\' + f
             #read the image
             img = image.load_img(path, target_size=(224, 224)) 
@@ -98,15 +113,22 @@ class find_similar():
             self.features.append(model.predict(img).flatten())
             
             ki += 1
-            if ki % 10 == 1:
+            if ki % 100 == 1:
+                if save_progress:
+                    if ki % 5000 == 1:
+                        with bz2.open(progress_path, 'wb') as file:
+                            pickle.dump(self.features, file, protocol=pickle.HIGHEST_PROTOCOL)  
+                            print('Features for', ki, 'images saved')
                 print('Features calculated for', ki, 'images')
             
     #main method, to extract features and find nearest neighbors
     def main(self, k=5, algorithm='brute', metric='cosine',
-             save_features=False, save_similar_models=False):
+             save_features=False, save_similar_models=False,
+             save_progress=True, load_previous_features=True):
 
         #extract the features
-        self._extract_features()
+        self._extract_features(save_progress=save_progress,
+                               load_previous_features=load_previous_features)
         
         X = np.array(self.features)
         print('Calculating nearest neighbors')
@@ -118,8 +140,8 @@ class find_similar():
             path = parentdir + '\\data\\trained_models\\'
             if not os.path.exists(path):
                 os.makedirs(path)
-            with open(path + 'training_features_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
-                pickle.dump(kNN, file, protocol=pickle.HIGHEST_PROTOCOL)
+            with bz2.open(path + 'training_features_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
+                pickle.dump(self.features, file, protocol=pickle.HIGHEST_PROTOCOL)
             with open(path + 'training_images_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
                 pickle.dump(self.images, file, protocol=pickle.HIGHEST_PROTOCOL)
             with open(path + 'training_mdl_to_pixl_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
@@ -151,6 +173,6 @@ class find_similar():
         self.x = path_to_similar_mdls
             
 if __name__ == '__main__':
-    sim = find_similar(dpt_num_department=999)
-    sim.main(k=8, save_features=True)
+    sim = find_similar(dpt_num_department=0)
+    sim.main(k=8, save_features=True, save_progress=True, load_previous_features=True)
     sim.plot_similar()

@@ -10,7 +10,7 @@ import boto3
 import io
 import pandas as pd
 import shutil
-import urllib.request
+from urllib.request import urlopen
 
 import os, sys, inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -48,7 +48,7 @@ class extract_images():
         
     #main method: loops through pixl IDs, and extract images 
     def run(self, dpt_num_department=371, domain_id='0341', delete_images=False,
-            last_downloaded=None):
+            last_downloaded=None, target_size=None):
         
         #extract the models/pixl IDs in a dataframe
         self._extract_IDs(dpt_num_department=dpt_num_department,
@@ -80,11 +80,16 @@ class extract_images():
         #loop through the pixl IDs, and load the images
         k = 0
         for index, row in self.models.iterrows():
-            url = 'https://contents.mediadecathlon.com/p' + str(row['id']) + '/'
+            if target_size is not None:
+                url = 'https://contents.mediadecathlon.com/p' + str(row['id']) + '/sq/' + str(row['id']) + '.jpg?f=' + str(target_size[0]) + 'x' + str(target_size[1])
+            else:
+                url = 'https://contents.mediadecathlon.com/p' + str(row['id']) + '/'
             file = folder + '\\' + str(row['product_id_model']) + '_' + str(row['id']) + '.jpg'
             #extract and save the image
             try:
-                urllib.request.urlretrieve(url, file)
+                request = urlopen(url, timeout=10).read()
+                with open(file, 'wb') as f:
+                    f.write(request)
                 k += 1
                 print('Image retrieved number', k)
             except:
@@ -93,5 +98,6 @@ class extract_images():
     
 if __name__ == '__main__':
     extracter = extract_images()
-    extracter.run(dpt_num_department=0, domain_id='0341')
+    extracter.run(dpt_num_department=0, domain_id='0341',
+                  target_size=(224, 224))
         

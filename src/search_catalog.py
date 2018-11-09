@@ -12,6 +12,7 @@ from collections import OrderedDict
 import numpy as np
 import os
 import pickle
+from sklearn.neighbors import NearestNeighbors
 from tensorflow.python.keras.applications.vgg19 import VGG19, preprocess_input
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import preprocessing
@@ -37,16 +38,20 @@ class search_catalog():
     #method to load features of each product
     def _load_features(self, dataset_augmentation=True):
         if dataset_augmentation:
-            path_kNN = parentdir + '\\data\\trained_models\\training_features_augmented_'
+            path_features = parentdir + '\\data\\trained_models\\training_features_augmented_'
             path_images = parentdir + '\\data\\trained_models\\training_images_augmented_'
         else:
-            path_kNN = parentdir + '\\data\\trained_models\\training_features_'
+            path_features = parentdir + '\\data\\trained_models\\training_features_'
             path_images = parentdir + '\\data\\trained_models\\training_images_'
             
-        with open(path_kNN + 'dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
-            self.kNN = pickle.load(file)
+        with open(path_features + 'dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
+            self.features = pickle.load(file)
         with open(path_images + 'dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
             self.images = pickle.load(file)
+            
+        #fit kNN model
+        kNN = NearestNeighbors(n_neighbors=np.min([50, X.shape[0]]), algorithm=algorithm, metric=metric).fit(X)
+        _, self.NN = kNN.kneighbors(X) 
         
     #method to calculate features for all images and augmented ones
     def _calculate_augmented_features(self, flip=True, rotate=True, algorithm='brute', metric='cosine',
@@ -114,9 +119,9 @@ class search_catalog():
             if not os.path.exists(path):
                 os.makedirs(path)
             with open(path + 'training_features_augmented_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
-                pickle.dump(self.kNN, file, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(self.features, file, protocol=pickle.HIGHEST_PROTOCOL)
             with open(path + 'training_images_augmented_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'wb') as file:
-                pickle.dump(self.images, file, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(self.features, file, protocol=pickle.HIGHEST_PROTOCOL)
                 
             print('Features saved!')
         
@@ -159,7 +164,7 @@ class search_catalog():
         # Load the mdl to pixl ID file
         path = parentdir + '\\data\\trained_models\\'
         with open(path + 'training_mdl_to_pixl_dpt_num_department_' + str(self.dpt_num_department) + '.pickle', 'rb') as file:
-                mdl_to_pixl = pickle.load(file)
+            mdl_to_pixl = pickle.load(file)
                 
         #find the path to an image of the similar models
         path_to_similar_mdls = [parentdir + '/data/dataset/dpt_num_department_' + str(self.dpt_num_department) + '/' + str(i) + '_' + str(mdl_to_pixl[i][0]) + '.jpg' for i in self.similar_models]
@@ -173,7 +178,7 @@ if __name__=='__main__':
     image = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
 #    image = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
 #    image = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-    search = search_catalog(dpt_num_department=371)
+    search = search_catalog(dpt_num_department=999)
     search.run(image, load_features=True, dataset_augmentation=True)
     search.plot_similar()
         
