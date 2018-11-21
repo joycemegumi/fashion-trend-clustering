@@ -19,6 +19,7 @@ from sklearn.neighbors import NearestNeighbors
 from tensorflow.python.keras.applications.vgg19 import VGG19, preprocess_input
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.preprocessing import image
+from tensorflow.python.keras.layers import GlobalAveragePooling2D
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -71,7 +72,10 @@ class find_similar():
         #load VGG19 model
         print("Loading VGG19 pre-trained model...")
         base_model = VGG19(weights='imagenet')
-        model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
+        base_model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
+        x = base_model.output
+        x = GlobalAveragePooling2D()(x)
+        model = Model(inputs=base_model.input, outputs=x)
         
         #create a model ID: list of associated pixl IDs dictionary, useful to identify most similar models after computation
         folder = parentdir + '\\data\\dataset\\' + 'dpt_num_department_' + str(self.dpt_num_department)
@@ -122,7 +126,7 @@ class find_similar():
                 print('Features calculated for', ki, 'images')
             
     #main method, to extract features and find nearest neighbors
-    def main(self, k=5, algorithm='brute', metric='cosine',
+    def fit(self, k=5, algorithm='brute', metric='cosine',
              save_features=False, save_similar_models=False,
              save_progress=True, load_previous_features=True):
 
@@ -174,5 +178,5 @@ class find_similar():
             
 if __name__ == '__main__':
     sim = find_similar(dpt_num_department=0)
-    sim.main(k=8, save_features=True, save_progress=True, load_previous_features=True)
+    sim.fit(k=8, save_features=True, save_progress=True, load_previous_features=True)
     sim.plot_similar()

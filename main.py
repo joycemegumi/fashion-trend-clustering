@@ -96,7 +96,7 @@ def calculate_features():
     #otherwise
     else:
         sim = fs.find_similar(dpt_num_department=args.dpt_number)
-        sim.main(save_features=True, save_similar_models=True)
+        sim.fit(save_features=True, save_similar_models=True)
 
 #function to find models most similar to another model
 def similar_to_model(model_ID):
