@@ -6,12 +6,40 @@ Helper functions
 
 @author: AI team
 """
+import boto3
+import io
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
+
+try:
+    from config import aws_access_key_id, aws_secret_access_key
+except:
+    #grab keys from the environment for Jenkins runs
+    aws_access_key_id = os.environ.get('aws_access_key_id')
+    aws_secret_access_key = os.environ.get('aws_secret_access_key')
+
+#function to extract data from S3
+def read_S3(dpt_num_department, domain_id, sep=";",
+            header=0, names=None, compression='gzip'):
+        
+        session = boto3.session.Session(region_name='EU-west-1')
+        s3client = session.client('s3',
+                              aws_access_key_id=aws_access_key_id,
+                              aws_secret_access_key=aws_secret_access_key)
+        
+        response = s3client.get_object(Bucket='preprod.datamining',
+                                   Key='images/data/pixlIDs_domain_id_' + domain_id + '_dpt_num_department_' + str(dpt_num_department) + '000.gz')
+        
+        models = pd.read_csv(io.BytesIO(response['Body'].read()), 
+                         sep=sep, header=header,
+                         names=names, compression=compression)
+        
+        return models
 
 #function to plot models similar to a given model or a given image
 def plot_similar(path_to_img, path_to_similar_mdls, img_name='', subplots=(3,3)):
