@@ -88,3 +88,17 @@ def plot_similar(path_to_img, path_to_similar_mdls, img_name='', subplots=(3,3))
         ax.set_yticks([])
     
     plt.show()
+    
+
+#dapters to store and retrieve numpy arrays in sqlite databases...
+#...see https://www.pythonforthelab.com/blog/storing-data-with-sqlite/#storing-numpy-arrays-into-databases
+def adapt_array(arr):
+    out = io.BytesIO()
+    np.save(out, arr)
+    out.seek(0)
+    return sqlite3.Binary(out.read())
+
+def convert_array(text):
+    out = io.BytesIO(text)
+    out.seek(0)
+    return np.load(out)

@@ -32,21 +32,8 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from utils import utils
 
-#create the adapters to store numpy arrays...
-#...see https://www.pythonforthelab.com/blog/storing-data-with-sqlite/#storing-numpy-arrays-into-databases
-def adapt_array(arr):
-    out = io.BytesIO()
-    np.save(out, arr)
-    out.seek(0)
-    return sqlite3.Binary(out.read())
-
-def convert_array(text):
-    out = io.BytesIO(text)
-    out.seek(0)
-    return np.load(out)
-
-sqlite3.register_adapter(np.ndarray, adapt_array)
-sqlite3.register_converter("array", convert_array)
+sqlite3.register_adapter(np.ndarray, utils.adapt_array)
+sqlite3.register_converter("array", utils.convert_array)
 
 
 class find_similar():
@@ -110,6 +97,7 @@ class find_similar():
                 00090: 90d rotation
                 000180: 180d rotation
                 000279: 270d rotation
+                empty string: no transformation
             """                       
             #preprocess the image
             img = image.img_to_array(img)  # convert to array
@@ -259,7 +247,8 @@ class find_similar():
     def plot_similar(self, mdl=None):
         
         #if no models is provided, randomly choose one
-        mdl = self.models[randint(0, len(self.models))]
+        if mdl is None:
+            mdl = self.models[randint(0, len(self.models))]
         
         #path to an image of this model
         folder = parentdir + '\\data\\dataset\\' + 'dpt_num_department_' + str(self.dpt_num_department)
@@ -276,5 +265,5 @@ class find_similar():
 if __name__ == '__main__':
     sim = find_similar(dpt_num_department=0)
 #    sim._calculate_features()
-    sim.fit(k=8, model='Inception_Resnet', save_similar_models=False, data_augmentation=False)
+    sim.fit(k=8, model='Inception_Resnet', save_similar_models=False, data_augmentation=True)
     sim.plot_similar()

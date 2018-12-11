@@ -9,3 +9,5 @@ data/dataset
 data/dataset/*
 data/trained_models
 data/trained_models/*
+data/database
+data/database/*
