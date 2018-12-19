@@ -26,11 +26,21 @@ where you replace {DPT_NUMBER} with the number of the department (for instance, 
 ```
 preprod.datamining/images/data/pixlIDs_domain_id_{DOMAIN_ID}_dpt_num_department_{DPT_NUMBER}000.gz'
 ```
-This file must contain at least two columns, *product_id_model*, the id of the models in the catalog, and *id*, the pixl ids of the images of these models.
+This file must contain at least two columns, *product_id_model*, the id of the relevant models in the catalog, and *id*, the pixl ids of the images of these models.
 
-The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. 
+The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. The images will be save in the data/dataset/dpt_number_department{DPT_NUMBER} subdirectory. The images are saved as a .jpg, the name of the image being the model and pixl ids separated with an underscore (for instance, 8156287_476862.jpg for image 476862 of model 8156287). 
 
 ## Find the products most similar to a given one
+To find, for each model, the list of the other models in the catalog which are most similar, run the following call:
+```
+python main.py --task fit --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID} --transfer_model {TRANSFER_MODEL} --number {NUMBER} --data_augmentation {DATA_AUGMENTATION}
+```
+This will, as described in the previous section, read a file on S3 to extract the id of the relevant models and images. Then, the library runs through all the images, and calculate their feature vectors. These vectors are stored in an sqlite database found in the data/database directory. The name of the database is features.db, and the features are stored in a table named features_{DPT_NUMBER}. Note that the calculate on the features can take hours if the folder contains many (> 1000) images - however, the features can be extracted over multiple sessions as, during each call, only the features not found in the database are calculated.
+
+Data augmentation can be enable by passing 1 as the --data_augmentation argument - in this case, the features will be calculated for the original image, as well as the image fliped left-right and up-down, and the image rotated by angles of 90, 180 and 270 degrees. 
+
+After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which are the most similar. The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. 
+
 
 ## Find the products most similar to a given image
 
