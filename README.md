@@ -28,20 +28,26 @@ preprod.datamining/images/data/pixlIDs_domain_id_{DOMAIN_ID}_dpt_num_department_
 ```
 This file must contain at least two columns, *product_id_model*, the id of the relevant models in the catalog, and *id*, the pixl ids of the images of these models.
 
-The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. The images will be save in the data/dataset/dpt_number_department{DPT_NUMBER} subdirectory. The images are saved as a .jpg, the name of the image being the model and pixl ids separated with an underscore (for instance, 8156287_476862.jpg for image 476862 of model 8156287). 
+The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. The images will be save in the data/dataset/dpt_number_department{DPT_NUMBER} subdirectory. The images are saved as a .jpg, the name of the image being the model and pixl ids separated by an underscore (for instance, 8156287_476862.jpg for image 476862 of model 8156287). 
 
 ## Find the products most similar to a given one
 To find, for each model, the list of the other models in the catalog which are most similar, run the following call:
 ```
 python main.py --task fit --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID} --transfer_model {TRANSFER_MODEL} --number {NUMBER} --data_augmentation {DATA_AUGMENTATION}
 ```
-This will, as described in the previous section, read a file on S3 to extract the id of the relevant models and images. Then, the library runs through all the images, and calculate their feature vectors. These vectors are stored in an sqlite database found in the data/database directory. The name of the database is features.db, and the features are stored in a table named features_{DPT_NUMBER}. Note that the calculate on the features can take hours if the folder contains many (> 1000) images - however, the features can be extracted over multiple sessions as, during each call, only the features not found in the database are calculated.
+This will, as described in the previous section, read a file on S3 to extract the id of the relevant models and images. Then, the library runs through all the images, and calculate their feature vectors. These vectors are stored in an sqlite database located in the data/database directory. The name of the database is features.db, and the features are stored in a table named features_{DPT_NUMBER}. Note that the computation of the features can take hours if the folder contains many (> 1000) images. However, the features can be extracted over multiple sessions as, at each call, only the features not found in the database are calculated.
 
-Data augmentation can be enable by passing 1 as the --data_augmentation argument - in this case, the features will be calculated for the original image, as well as the image fliped left-right and up-down, and the image rotated by angles of 90, 180 and 270 degrees. 
+Data augmentation can be enabled by passing 1 as the --data_augmentation argument - in this case, the features will be calculated for the original image, as well as the image fliped left-right and up-down, and the image rotated by angles of 90, 180 and 270 degrees. 
 
-After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, 'VGG' and 'Inception_Resnet'). The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {model: [list of most similar models]}, providing, for each model, the list of models (the lenght of this list is provided as the --number argument) which look the most similar. 
+After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, VGG19 (VGG) and Inception_Resnet_V2 (Inception_Resnet)). The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {model: [list of most similar models]} providing, for each model, the list of models (the lenght of this list is provided as the --number argument) which are the most similar. 
 
-## Find the products most similar to a given image
+## Show the most similar models
+Once the dictionary of most similar models has been built (see the previous section), we can run the following call to print the most similar items to a given one, along with their textual description.
+```
+python main.py --task show_similar_models --model_id {MODEL_ID} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
+```
+When making this call, the library first opens the dictionary of most similar models. If the argument --model_id is not provided, one model id is picked randomly, and the most similar items is returned returned. 
 
+For example, to get...
 
 ## Roadmap
