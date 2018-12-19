@@ -10,8 +10,25 @@ Make sure you have python 3 and the required libraries properly installed (pip i
 ```
 git clone https://github.com/decathloncanada/image-classification.git
 ```
+To be able to read files from the preprod.datamining bucket on S3, make sure that you have a config.py file in the root folder of the directory, with the following content:
+```
+aws_access_key_id={AWS_ACCESS_KEY_ID}
+aws_secret_access_key={AWS_SECRET_ACCESS_KEY_ID}
+```
+where you replace {AWS_ACCESS_KEY_ID} and {AWS_SECRET_ACCESS_KEY_ID} with your own keys.
 
 ## Extract the images from the catalog
+The images of the models in the catalog can be extracted by running the following command:
+```
+python main.py --task extract_images --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID}
+```
+where you replace {DPT_NUMBER} with the number of the department (for instance, 371 for ice hockey) and {DOMAIN_ID} with the id of the domain (for instance, 0341 for decathlon.ca). When making this call, the library will load the following file on S3:
+```
+preprod.datamining/images/data/pixlIDs_domain_id_{DOMAIN_ID}_dpt_num_department_{DPT_NUMBER}000.gz'
+```
+This file must contain at least two columns, *product_id_model*, the id of the models in the catalog, and *id*, the pixl ids of the images of these models.
+
+The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. 
 
 ## Find the products most similar to a given one
 
