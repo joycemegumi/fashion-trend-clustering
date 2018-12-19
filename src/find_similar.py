@@ -32,8 +32,21 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from utils import utils
 
-sqlite3.register_adapter(np.ndarray, utils.adapt_array)
-sqlite3.register_converter("array", utils.convert_array)
+#dapters to store and retrieve numpy arrays in sqlite databases...
+#...see https://www.pythonforthelab.com/blog/storing-data-with-sqlite/#storing-numpy-arrays-into-databases
+def adapt_array(arr):
+    out = io.BytesIO()
+    np.save(out, arr)
+    out.seek(0)
+    return sqlite3.Binary(out.read())
+
+def convert_array(text):
+    out = io.BytesIO(text)
+    out.seek(0)
+    return np.load(out)
+
+sqlite3.register_adapter(np.ndarray, adapt_array)
+sqlite3.register_converter("array", convert_array)
 
 
 class find_similar():
@@ -104,16 +117,16 @@ class find_similar():
             
             #flip
             if transformation=='0001':
-                np.fliplr(img)
+                img = np.fliplr(img)
             elif transformation=='0002':
-                np.flipud(img)
+                img = np.flipud(img)
             #rotate
             elif transformation=='00090':
-                rotate(img, angle=90)
+                img = rotate(img, angle=90)
             elif transformation=='000180':
-                rotate(img, angle=180)
+                img = rotate(img, angle=180)
             elif transformation=='000270':
-                rotate(img, angle=270)
+                img = rotate(img, angle=270)
             
             img = np.expand_dims(img, axis=0)
             
@@ -259,7 +272,6 @@ class find_similar():
         
         # Create figure with sub-plots.
         utils.plot_similar(path_to_img=path_to_img, path_to_similar_mdls=path_to_similar_mdls, img_name=str(mdl))
-        self.x = path_to_similar_mdls
         
         
 if __name__ == '__main__':
