@@ -39,8 +39,7 @@ This will, as described in the previous section, read a file on S3 to extract th
 
 Data augmentation can be enable by passing 1 as the --data_augmentation argument - in this case, the features will be calculated for the original image, as well as the image fliped left-right and up-down, and the image rotated by angles of 90, 180 and 270 degrees. 
 
-After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which are the most similar. The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. 
-
+After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, 'VGG' and 'Inception_Resnet'). The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {model: [list of most similar models]}, providing, for each model, the list of models (the lenght of this list is provided as the --number argument) which look the most similar. 
 
 ## Find the products most similar to a given image
 
