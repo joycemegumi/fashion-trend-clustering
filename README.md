@@ -46,8 +46,8 @@ Once the dictionary of most similar models has been built (see the previous sect
 ```
 python main.py --task show_similar_models --model_id {MODEL_ID} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
 ```
-When making this call, the library first opens the dictionary of most similar models. If the argument --model_id is not provided, one model id is picked randomly, and the most similar items is returned returned. 
+When making this call, the library first opens the dictionary of most similar models. If the argument --model_id is not provided, one model id is picked randomly, and the most similar models is returned. 
 
-For example, to get...
+For example, to get the most similar models to model (a pair of hockey skates), based on Inception_Resnet_V2
 
 ## Roadmap
