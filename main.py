@@ -37,8 +37,8 @@ parser.add_argument('--task', type=str, default='pass',
                     task to perform: 
                     extract_images --> extract and save images from contents.mediadecathlon.com
                     fit --> compute features for all images in the dataset
-                    show_similar_models --> show models most similar to a given one
-                    search_models --> find the models most similar to a given image
+                    show_similar_products --> show products most similar to a given one
+                    search_products --> find the products most similar to a given image
                     """)
 parser.add_argument('--data_augmentation', type=int, default=1,
                     help="""
@@ -46,20 +46,20 @@ parser.add_argument('--data_augmentation', type=int, default=1,
                     """)
 parser.add_argument('--dpt_number', type=int, default=0,
                     help="""
-                    Number of the department from which we want to consider the models. Department = 0 indicates that we consider
-                    the models of all departments
+                    Number of the department from which we want to consider the products. Department = 0 indicates that we consider
+                    the products of all departments
                     """)
 parser.add_argument('--domain_id', type=str, default='0341',
                     help="""
-                    Id of the domain (for instance, decathlon.ca), used to extract the Pixl IDs of the relevant models
+                    Id of the domain (for instance, decathlon.ca), used to extract the Pixl IDs of the relevant products
                     """)
-parser.add_argument('--model_id', type=int, default=None,
+parser.add_argument('--product_id', type=int, default=None,
                     help="""
-                    ID of the model for which we want to get the most similar models in the dataset
+                    ID of the product for which we want to get the most similar products in the dataset
                     """)
 parser.add_argument('--img', type=str, default=None,
                     help="""
-                    Path to the image for which we want to identify the most similar models in the catalog
+                    Path to the image for which we want to identify the most similar products in the catalog
                     """)
 parser.add_argument('--transfer_model', type=str, default='VGG',
                     help="""
@@ -68,17 +68,17 @@ parser.add_argument('--transfer_model', type=str, default='VGG',
                     """)
 parser.add_argument('--number', type=int, default=10,
                     help="""
-                    Number of similar models we want to find
+                    Number of similar products we want to find
                     """)
 
 args = parser.parse_args()
 
 #verify the format of the calculate_features
-if args.task not in ['extract_images', 'fit', 'show_similar_models', 'search_models']:
+if args.task not in ['extract_images', 'fit', 'show_similar_products', 'search_products']:
     print('Task not supported')
     args.task = 'pass'
 
-if args.task in ['fit', 'search_models']:    
+if args.task in ['fit', 'search_products']:    
     if args.data_augmentation == 1:
         data_augmentation=True
     elif args.data_augmentation == 0:
@@ -95,9 +95,9 @@ if not (args.number >= 0 and isinstance(args.number, int)):
     print('number has to be a positive integer')
     args.task = 'pass'
 
-if args.model_id is not None:    
-    if not (args.model_id >= 0 and isinstance(args.model_id, int)):
-        print('model_id has to be a positive integer')
+if args.product_id is not None:    
+    if not (args.product_id >= 0 and isinstance(args.product_id, int)):
+        print('product_id has to be a positive integer')
         args.task = 'pass'
 
 if args.img is not None:    
@@ -110,37 +110,37 @@ def extract_images():
     extracter = ext.extract_images()
     extracter.run(dpt_num_department=args.dpt_number, domain_id=args.domain_id)
 
-#function to build the dictionary of most similar models
+#function to build the dictionary of most similar products
 def fit():
     sim = fs.find_similar(dpt_num_department=args.dpt_number, domain_id=args.domain_id)
     sim.fit(k=args.number, model=args.transfer_model, 
             data_augmentation=data_augmentation, save_similar_models=True)
 
-#function to show the most similar models    
+#function to show the most similar products    
 def show_similar_items():
     #load the similar items dictionary
     path = '\\data\\trained_models\\'
-    with open(currentdir + path + 'similar_models_dpt_num_department_' + str(args.dpt_number) + '_model_' + args.transfer_model + '.pickle', 'rb') as file:
+    with open(currentdir + path + 'similar_products_dpt_num_department_' + str(args.dpt_number) + '_model_' + args.transfer_model + '.pickle', 'rb') as file:
         similar_items = pickle.load(file)   
         
-    #if no model id is provided, randomly select one
+    #if no product id is provided, randomly select one
     all_items = [i for i in similar_items]
-    if args.model_id is None:      
+    if args.product_id is None:      
         item = all_items[randint(0, len(all_items))]
     else:
-        item = args.model_id
+        item = args.product_id
         
     #verify that the item is in the dictionary
     if str(item) in all_items:
         #print the results
         for i in range(len(similar_items[str(item)])):
-            print('Most similar model number', i+1, ': ' + similar_items[str(item)][i])
+            print('Most similar product number', i+1, ': ' + similar_items[str(item)][i])
             
     else:
-        print('Model number', item, 'not recognized')
+        print('Product number', item, 'not recognized')
         
-#function to find models most similar to an image
-def search_models(img):
+#function to find products most similar to an image
+def search_products(img):
     search = sc.search_catalog(dpt_num_department=args.dpt_number)
     search.run(img, load_features=True, model=args.transfer_model, data_augmentation=data_augmentation) 
     #print the results
@@ -148,7 +148,7 @@ def search_models(img):
     for i in range(len(search.similar_models)):
         if search.similar_models[i] not in search.similar_models[:i]:#we remove duplicates
             k+=1
-            print('Most similar model number', k, ': ' + str(search.similar_models[i]))
+            print('Most similar product number', k, ': ' + str(search.similar_models[i]))
             if k+1 == args.number:
                 break
 
@@ -159,9 +159,9 @@ if args.task == 'extract_images':
 elif args.task == 'fit':
     fit()
     
-elif args.task == 'show_similar_models':
+elif args.task == 'show_similar_products':
     show_similar_items()
     
-elif args.task == 'search_models':
-    search_models(args.img)
+elif args.task == 'search_products':
+    search_products(args.img)
     

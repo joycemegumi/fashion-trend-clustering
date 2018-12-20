@@ -91,7 +91,7 @@ class find_similar():
             path = parentdir + '\\data\\trained_models\\'
             if not os.path.exists(path):
                 os.makedirs(path)
-            with open(path + 'similar_models_dpt_num_department_' + str(self.dpt_num_department) + '_model_' + model + '.pickle', 'wb') as file:
+            with open(path + 'similar_products_dpt_num_department_' + str(self.dpt_num_department) + '_model_' + model + '.pickle', 'wb') as file:
                 pickle.dump(self.similar_models, file, protocol=pickle.HIGHEST_PROTOCOL)
             
             print('Dictionary of similar models saved!')
