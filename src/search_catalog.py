@@ -135,30 +135,9 @@ class search_catalog():
         #identify most similar models
         self.similar_models = [self.mdls[i] for i in self.NN[0]][:5*k]
         self.similar_images = [self.images[i] for i in self.NN[0]][:5*k]
-#        self.similar_models = list(OrderedDict.fromkeys(similar_models))[:k] #we remove duplicate models
     
     def plot_similar(self):    
-
-#        # Find the pixl IDs linked to the models        
-#        #connect to the database
-#        conn = sqlite3.connect(parentdir + '\\data\\database\\features.db', detect_types=sqlite3.PARSE_DECLTYPES)
-#        cur = conn.cursor()
-#        
-#        cur.execute('SELECT pixl_id, mdl_id FROM features_' + str(self.dpt_num_department) + ' WHERE active = ? AND transformation = ?', 
-#                    (1,''))
-#        
-#        data = cur.fetchall()
-#        
-#        #build a model to pixl id dictionary
-#        models = [i[1] for i in data]
-#        models = list(set(models))
-#        mdl_to_pixl = {}
-#        for i in models:
-#            mdl_to_pixl[i] = [j[0] for j in data if j[1]==i]
-#                
-#        #find the path to an image of the similar models
-#        path_to_similar_mdls = [parentdir + '/data/dataset/dpt_num_department_' + str(self.dpt_num_department) + '/' + str(i) + '_' + str(mdl_to_pixl[i][0]) + '.jpg' for i in self.similar_models]
-        
+       
         path_to_similar_mdls = []
         for i in range(len(self.similar_images)):
             if self.similar_models[i] not in self.similar_models[:i]: #remove duplicate models
@@ -178,10 +157,10 @@ class search_catalog():
         
     
 if __name__=='__main__':
-#    image_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
+    image_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
 #    image_path = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
 #    image_path = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
-    image_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
+#    image_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
     search = search_catalog(dpt_num_department=371)
     search.run(image_path, model='Inception_Resnet', data_augmentation=True)
     search.plot_similar()

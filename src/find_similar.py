@@ -275,7 +275,7 @@ class find_similar():
         
         
 if __name__ == '__main__':
-    sim = find_similar(dpt_num_department=0)
+    sim = find_similar(dpt_num_department=371)
 #    sim._calculate_features()
-    sim.fit(k=8, model='Inception_Resnet', save_similar_models=False, data_augmentation=True)
+    sim.fit(k=8, model='Inception_Resnet', save_similar_models=True, data_augmentation=True)
     sim.plot_similar()

@@ -6,9 +6,6 @@ Script to extract and save images based on pixl IDs
 
 @author: AI team
 """
-from algoliasearch import algoliasearch
-import pandas as pd
-import pickle
 import shutil
 from urllib.request import urlopen
 

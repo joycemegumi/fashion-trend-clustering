@@ -40,7 +40,7 @@ parser.add_argument('--task', type=str, default='pass',
                     show_similar_models --> show models most similar to a given one
                     search_models --> find the models most similar to a given image
                     """)
-parser.add_argument('--dataset_augmentation', type=int, default=1,
+parser.add_argument('--data_augmentation', type=int, default=1,
                     help="""
                     If we want (1) or not (0) to consider data augmentation (lr/ud flipping and 90,180,270 degree rotations)
                     """)
@@ -70,10 +70,6 @@ parser.add_argument('--number', type=int, default=10,
                     help="""
                     Number of similar models we want to find
                     """)
-parser.add_argument('--img', type=str, default=None,
-                    help="""
-                    Path to the image for which we want to identify the most similar models in the catalog
-                    """)
 
 args = parser.parse_args()
 
@@ -83,10 +79,10 @@ if args.task not in ['extract_images', 'fit', 'show_similar_models', 'search_mod
     args.task = 'pass'
 
 if args.task in ['fit', 'search_models']:    
-    if args.dataset_augmentation == 1:
-        dataset_augmentation=True
-    elif args.dataset_augmentation == 0:
-        dataset_augmentation=False
+    if args.data_augmentation == 1:
+        data_augmentation=True
+    elif args.data_augmentation == 0:
+        data_augmentation=False
     else:
         print('dataset_augmentation argument is not 0 or 1')
         args.task = 'pass'
@@ -98,10 +94,11 @@ if not (args.dpt_number >= 0 and isinstance(args.dpt_number, int)):
 if not (args.number >= 0 and isinstance(args.number, int)):
     print('number has to be a positive integer')
     args.task = 'pass'
-    
-if not (args.model_id >= 0 and isinstance(args.model_id, int)):
-    print('model_id has to be a positive integer')
-    args.task = 'pass'
+
+if args.model_id is not None:    
+    if not (args.model_id >= 0 and isinstance(args.model_id, int)):
+        print('model_id has to be a positive integer')
+        args.task = 'pass'
 
 if args.img is not None:    
     if not os.path.isfile(args.img):
@@ -114,16 +111,16 @@ def extract_images():
     extracter.run(dpt_num_department=args.dpt_number, domain_id=args.domain_id)
 
 #function to build the dictionary of most similar models
-def fit(model_ID):
+def fit():
     sim = fs.find_similar(dpt_num_department=args.dpt_number, domain_id=args.domain_id)
     sim.fit(k=args.number, model=args.transfer_model, 
-            data_augmentation=args.data_augmentation, save_similar_models=True)
+            data_augmentation=data_augmentation, save_similar_models=True)
 
 #function to show the most similar models    
 def show_similar_items():
     #load the similar items dictionary
-    path = 'data\\trained_models\\'
-    with open(path + 'similar_models_dpt_num_department_' + str(args.dpt_number) + '_model_' + args.transfer_model + '.pickle', 'rb') as file:
+    path = '\\data\\trained_models\\'
+    with open(currentdir + path + 'similar_models_dpt_num_department_' + str(args.dpt_number) + '_model_' + args.transfer_model + '.pickle', 'rb') as file:
         similar_items = pickle.load(file)   
         
     #if no model id is provided, randomly select one
@@ -135,29 +132,36 @@ def show_similar_items():
         
     #verify that the item is in the dictionary
     if str(item) in all_items:
-    #print the results
-    for i in range(len(similar_items[str(item)])):
-        print('Most similar model number', i+1, 'is: ' + similar_items[str(item)][i])
-        
+        #print the results
+        for i in range(len(similar_items[str(item)])):
+            print('Most similar model number', i+1, ': ' + similar_items[str(item)][i])
+            
     else:
-        print('Model number', model_id, 'not recognized')
+        print('Model number', item, 'not recognized')
         
 #function to find models most similar to an image
 def search_models(img):
     search = sc.search_catalog(dpt_num_department=args.dpt_number)
-    search.run(img, load_features=True, dataset_augmentation=dataset_augmentation) 
-    print({'similar_models': search.similar_models})
+    search.run(img, load_features=True, model=args.transfer_model, data_augmentation=data_augmentation) 
+    #print the results
+    k=0
+    for i in range(len(search.similar_models)):
+        if search.similar_models[i] not in search.similar_models[:i]:#we remove duplicates
+            k+=1
+            print('Most similar model number', k, ': ' + str(search.similar_models[i]))
+            if k+1 == args.number:
+                break
 
 #run the proper function given the --task argument passed to the function
 if args.task == 'extract_images':
     extract_images()
     
-elif args.task == 'calculate_features':
-    calculate_features()
-
-elif args.task == 'find_similar_models':
-    if args.img is not None:
-        similar_to_img(args.img)
-    elif args.model is not None:
-        similar_to_model(args.model)
+elif args.task == 'fit':
+    fit()
+    
+elif args.task == 'show_similar_models':
+    show_similar_items()
+    
+elif args.task == 'search_models':
+    search_models(args.img)
     
