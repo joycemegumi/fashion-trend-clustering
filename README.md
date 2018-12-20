@@ -88,4 +88,4 @@ Most similar model number 6 : 8524150
 In this example, the library successfully found the hockey skates in the catalog (models ) as the most similar products.
 
 ## Roadmap
-The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com
+The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com. Some other improvements which could be done include the possibility to remove the background color in the pictures taken by the user (when the catalog only contains products with a white background), and identifying the most similar products using an ensemble approach (when there is more than one picture per model in the catalog).
