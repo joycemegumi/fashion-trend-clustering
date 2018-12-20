@@ -17,7 +17,7 @@ aws_secret_access_key={AWS_SECRET_ACCESS_KEY_ID}
 ```
 where you replace {AWS_ACCESS_KEY_ID} and {AWS_SECRET_ACCESS_KEY_ID} with your own keys.
 
-## Extract the images from the catalog
+## Extraction of the images from the catalog
 The images of the models in the catalog can be extracted by running the following command:
 ```
 python main.py --task extract_images --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID}
@@ -30,7 +30,7 @@ This file must contain at least two columns, *product_id_model*, the id of the r
 
 The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. The images will be save in the data/dataset/dpt_number_department{DPT_NUMBER} subdirectory. The images are saved as a .jpg, the name of the image being the model and pixl ids separated by an underscore (for instance, 8156287_476862.jpg for image 476862 of model 8156287). 
 
-## Find the products most similar to a given one
+## Calculation of the most similar products dictionary
 To find, for each model, the list of the other models in the catalog which are most similar, run the following call:
 ```
 python main.py --task fit --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID} --transfer_model {TRANSFER_MODEL} --number {NUMBER} --data_augmentation {DATA_AUGMENTATION}
@@ -41,13 +41,51 @@ Data augmentation can be enabled by passing 1 as the --data_augmentation argumen
 
 After the features have been calculated, the library will loop through all models, and find the models in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, VGG19 (VGG) and Inception_Resnet_V2 (Inception_Resnet)). The results are saved in a a file named similar_models_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {model: [list of most similar models]} providing, for each model, the list of models (the lenght of this list is provided as the --number argument) which are the most similar. 
 
-## Show the most similar models
+## Show the most similar products to a given model
 Once the dictionary of most similar models has been built (see the previous section), we can run the following call to print the most similar items to a given one, along with their textual description.
 ```
 python main.py --task show_similar_models --model_id {MODEL_ID} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
 ```
 When making this call, the library first opens the dictionary of most similar models. If the argument --model_id is not provided, one model id is picked randomly, and the most similar models is returned. 
 
-For example, to get the most similar models to model (a pair of hockey skates), based on Inception_Resnet_V2
+For example, to get the most similar products to model 8401523 (a hockey stick), based on Inception_Resnet_V2, you can run the following call:
+```
+python main.py --task show_similar_models --model_id 8401523 --dpt_number 371 --transfer_model Inception_Resnet
+```
+The response should look like:
+```
+Most similar model number 1 : 8401522
+Most similar model number 2 : 8401525
+Most similar model number 3 : 8401526
+Most similar model number 4 : 8401482
+Most similar model number 5 : 8397732
+```
+In this example, the algorithm indeed found that the most similar products to model 8401523 are the four other hockey sticks in the catalog (models 8401522, 8401525, 8401526 and 8401482). 
+
+## Find the most similar models to an image
+Once the features for all the images have been calculated (see the section *Calculation of the most similar products dictionary*), the products most similar to a given image can be found by providing the path to the image:
+```
+python main.py --task search_models --img {IMG} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
+```
+where {IMG} is the path to the given image.
+
+For instance, let's say you have the following image of your used pair of hockey skates:
+![alt text](https://raw.githubusercontent.com/decathloncanada/image-similarity/tree/master/test/test_image.jpg)
+
+And you want to find the products in the catalog with the most similar images (including the images produced by data augmentation). You can run the following command:
+```
+python main.py --task search_models --img {IMG} --transfer_model Inception_Resnet --dpt_number 371 --data_augmentation 1
+```
+
+```
+Most similar model number 1 : 8524152
+Most similar model number 2 : 8156286
+Most similar model number 3 : 8514405
+Most similar model number 4 : 8156287
+Most similar model number 5 : 8184005
+Most similar model number 6 : 8524150
+```
+
 
 ## Roadmap
+
