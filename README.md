@@ -6,7 +6,7 @@ The algorithm used to calculate image similarity is based on transfer learning. 
 For more information, please contact aicanada@decathlon.net
 
 ## Getting started
-Make sure you have python 3 and the required libraries properly installed (pip install requirements.txt). You can then git clone the project to the desired location
+Make sure you have python 3 and the required libraries properly installed (pip install requirements.txt). You can then git clone the project to the desired location:
 ```
 git clone https://github.com/decathloncanada/image-classification.git
 ```
@@ -41,14 +41,14 @@ Data augmentation can be enabled by passing 1 as the --data_augmentation argumen
 
 After the features have been calculated, the library will loop through all products, and find the products in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, VGG19 (VGG) and Inception_Resnet_V2 (Inception_Resnet)). The results are saved in a a file named similar_products_dpt_num_department_{DPT_NUMBER}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {product: [list of most similar product]} providing, for each product, the list of products (the lenght of this list is provided as the --number argument) which are the most similar. 
 
-## Show the most similar products to a given product
-Once the dictionary of most similar products has been built (see the previous section), we can run the following call to print the most similar items to a given one, along with their textual description.
+## Show the most similar products to a given one
+Once the dictionary of most similar products has been built (see the previous section), we can run the following call to print the most similar products to a given one.
 ```
 python main.py --task show_similar_products --product_id {PRODUCT_ID} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
 ```
-When making this call, the library first opens the dictionary of most similar products. If the argument --product_id is not provided, one product id is picked randomly, and the most similar products is returned. 
+When making this call, the library first opens the dictionary of most similar products. If the argument --product_id is not provided, one product id is picked randomly, and the most similar products are returned. 
 
-For example, to get the most similar products to product 8401523 (a hockey stick), based on Inception_Resnet_V2, you can run the following call:
+For example, to get the most similar products to product 8401523 (a hockey stick), based on model Inception_Resnet_V2, you can run the following call:
 ```
 python main.py --task show_similar_products --product_id 8401523 --dpt_number 371 --transfer_model Inception_Resnet
 ```
@@ -63,7 +63,7 @@ Most similar product number 5 : 8397732
 In this example, the algorithm indeed found that the most similar products to product 8401523 are the four other hockey sticks in the catalog (products 8401522, 8401525, 8401526 and 8401482). 
 
 ## Find the most similar products to an image
-Once the features for all the images have been calculated (see the section *Calculation of the most similar products dictionary*), the products most similar to a given image can be found by providing the path to the image:
+Once the features for all the images have been calculated (see the section *Calculation of the dictionary of most similar products*), the products most similar to a given image can be found by providing the path to the image:
 ```
 python main.py --task search_products --img {IMG} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
 ```
@@ -88,4 +88,4 @@ Most similar product number 6 : 8524150
 In this example, the library successfully found the hockey skates in the catalog as the most similar products.
 
 ## Roadmap
-The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com. Some other improvements which could be done include the possibility to remove the background color in the pictures taken by the user (when the catalog only contains products with a white background), and identifying the most similar products using an ensemble approach (when there is more than one picture per model in the catalog).
+The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com. Some other improvements which could be done include the possibility to remove the background color in the pictures taken by the user (when the catalog only contains products with a white background), and identifying the most similar products using an ensemble approach (when there is more than one picture per product in the catalog).
