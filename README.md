@@ -76,7 +76,7 @@ And you want to find the products in the catalog with the most similar images (i
 ```
 python main.py --task search_models --img {IMG} --transfer_model Inception_Resnet --dpt_number 371 --data_augmentation 1
 ```
-
+The response could look like:
 ```
 Most similar model number 1 : 8524152
 Most similar model number 2 : 8156286
@@ -85,7 +85,7 @@ Most similar model number 4 : 8156287
 Most similar model number 5 : 8184005
 Most similar model number 6 : 8524150
 ```
-
+In this example, the library successfully found the hockey skates in the catalog (models ) as the most similar products.
 
 ## Roadmap
-
+The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com
