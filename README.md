@@ -70,7 +70,7 @@ python main.py --task search_models --img {IMG} --dpt_number {DPT_NUMBER} --tran
 where {IMG} is the path to the given image.
 
 For instance, let's say you have the following image of your used pair of hockey skates:
-![alt text](https://raw.githubusercontent.com/decathloncanada/image-similarity/blob/master/test/test_image.jpg)
+![Alt text](test/test_image.jpg?raw=true "Title")
 
 And you want to find the products in the catalog with the most similar images (including the images produced by data augmentation). You can run the following command:
 ```
