@@ -62,7 +62,7 @@ Most similar product number 5 : 8397732
 ```
 In this example, the algorithm indeed found that the most similar products to product 8401523 are the four other hockey sticks in the catalog (products 8401522, 8401525, 8401526 and 8401482). 
 
-## Find the most similar products to an image
+## Perform a visual search of the catalog
 Once the features for all the images have been calculated (see the section *Calculation of the dictionary of most similar products*), the products most similar to a given image can be found by providing the path to the image:
 ```
 python main.py --task search_products --img {IMG} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
