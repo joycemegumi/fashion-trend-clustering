@@ -37,7 +37,7 @@ parser.add_argument('--dataset', type=str, default=None,
                     help="""
                     Name of the dataset containing the image of all the items
                     """)
-parser.add_argument('--item_id', type=int, default=None,
+parser.add_argument('--item', type=str, default=None,
                     help="""
                     ID of the item for which we want to show the most similar items in the dataset
                     """)
@@ -76,11 +76,6 @@ if args.dataset is not None:
         print('dataset does not exists')
         args.task = 'pass'
 
-if args.item_id is not None:    
-    if not (args.item_id >= 0 and isinstance(args.item_id, int)):
-        print('item_id has to be a positive integer')
-        args.task = 'pass'
-
 if args.img is not None:    
     if not os.path.isfile(args.img):
         print('file path to the image does not exists')
@@ -105,22 +100,22 @@ def show_similar_items():
         
     #if no item id is provided, randomly select one
     all_items = [i for i in similar_items]
-    if args.item_id is None:      
+    if args.item is None:      
         item = all_items[randint(0, len(all_items))]
     else:
-        item = args.item_id
+        item = args.item
         
     #verify that the item is in the dictionary
-    if str(item) in all_items:
+    if item in all_items:
         #print the results
-        print('Most similar items to item id:', item)
-        for i in range(len(similar_items[str(item)])):
-            print('Number', i+1, ': ' + similar_items[str(item)][i])
+        print('Most similar items to item:', item)
+        for i in range(len(similar_items[item])):
+            print('Number', i+1, ': ' + similar_items[item][i])
             if i+1 == args.number:
                 break
             
     else:
-        print('Item id', item, 'not recognized')
+        print('Item', item, 'not recognized')
         
 #function to find the item most similar to an image
 def visual_search(img):
