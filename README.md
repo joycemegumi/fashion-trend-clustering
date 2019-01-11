@@ -1,5 +1,5 @@
 # image-similarity
-Library built to perform two tasks: (1) find the products in the catalog most similar to a given one based on their images, and (2) from the image taken by a user, find the products in the catalog which look the most similar. The application of (1) is the recommendation of similar products on Websites and applications. The application of (2) is to provide users the possibility to search for products based on images, similarly to https://images.google.com/.
+Library built to perform two tasks: (1) find the items in a dataset most similar to a given one based on their images, and (2) from the image taken by a user, find the items in the dataset which look the most similar. The application of (1) is to build a recommendation system based on item similarity. The application of (2) is to build visual search engines (similarity to https://images.google.com/), to provide users the possibility to search for items based on images.
 
 The algorithm used to calculate image similarity is based on transfer learning. In a nutshell, we compute the features of each image using VGG19 and Inception_Resnet_V2 models. We then calculate the similarity of each image given the cosine distance between their feature vectors, and we rank the images with the highest similarity.
 
@@ -10,28 +10,10 @@ Make sure you have python 3 and the required libraries properly installed (pip i
 ```
 git clone https://github.com/decathloncanada/image-classification.git
 ```
-To be able to read files from the preprod.datamining bucket on S3, make sure that you have a config.py file in the root folder of the directory, with the following content:
-```
-aws_access_key_id={AWS_ACCESS_KEY_ID}
-aws_secret_access_key={AWS_SECRET_ACCESS_KEY_ID}
-```
-where you replace {AWS_ACCESS_KEY_ID} and {AWS_SECRET_ACCESS_KEY_ID} with your own keys.
 
-## Extraction of the images from the catalog
-The images of the products in the catalog can be extracted by running the following command:
-```
-python main.py --task extract_images --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID}
-```
-where you replace {DPT_NUMBER} with the number of the department (for instance, 371 for ice hockey) and {DOMAIN_ID} with the id of the domain (for instance, 0341 for decathlon.ca). When making this call, the library will load the following file on S3:
-```
-preprod.datamining/images/data/pixlIDs_domain_id_{DOMAIN_ID}_dpt_num_department_{DPT_NUMBER}000.gz'
-```
-This file must contain at least two columns, *product_id_model*, the id of the relevant products in the catalog, and *id*, the pixl ids of the images of these products.
-
-The library will then run through all the pixl ids, and download the images from contents.mediadecathlon.com. The images will be saved in the data/dataset/dpt_number_department{DPT_NUMBER} subdirectory. The images are saved as a .jpg, the name of the image being the product and pixl ids separated by an underscore (for instance, 8156287_476862.jpg for image 476862 of product 8156287). 
-
-## Calculation of the dictionary of most similar products 
-To find, for each product, the list of the other products in the catalog which are most similar, run the following call:
+## Services
+### Calculation of the dictionary of most similar items 
+To find, for each item, the list of the other items in the dataset which are most similar, , run the following call:
 ```
 python main.py --task fit --dpt_number {DPT_NUMBER} --domain_id {DOMAIN_ID} --transfer_model {TRANSFER_MODEL} --number {NUMBER} --data_augmentation {DATA_AUGMENTATION}
 ```
