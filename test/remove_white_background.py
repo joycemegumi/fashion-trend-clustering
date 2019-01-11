@@ -21,11 +21,12 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from utils import utils
 
-#img_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
+img_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
 #img_path = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
 #img_path = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
 #img_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-img_path = parentdir + '/data/dataset/test/hockey_skates_example.jpeg'
+#img_path = parentdir + '/data/dataset/test/hockey_skates_example.jpeg'
+
 #
 #image = cv2.imread(img_path)
 #r = 150.0 / image.shape[1]
@@ -72,9 +73,9 @@ import matplotlib.pyplot as plt
 #== Parameters =======================================================================
 BLUR = 21
 CANNY_THRESH_1 = 10
-CANNY_THRESH_2 = 50
+CANNY_THRESH_2 = 100
 MASK_DILATE_ITER = 10
-MASK_ERODE_ITER = 10
+MASK_ERODE_ITER = 5
 MASK_COLOR = (0.0,0.0,1.0) # In BGR format
 
 
@@ -139,3 +140,18 @@ plt.show()
 #cv2.imshow('img', masked)                                   # Display
 #cv2.waitKey()
 
+
+c_red, c_green, c_blue = cv2.split(img)
+mask_normalized = mask.astype('float32') / 255.0
+#c_red = np.multiply(c_red, mask_normalized) 
+c_red[mask_normalized<0.01]=1
+#c_green = np.multiply(c_green, mask_normalized) 
+c_green[mask_normalized<0.01]=1
+#c_blue = np.multiply(c_blue, mask_normalized) 
+c_blue[mask_normalized<0.01]=1
+
+img_b = cv2.merge((c_red, c_green, c_blue))
+
+# show on screen (optional in jupiter)
+plt.imshow(img_b)
+plt.show()

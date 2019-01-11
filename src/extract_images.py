@@ -33,7 +33,7 @@ class extract_images():
         self._extract_IDs(dpt_num_department=dpt_num_department,
                           domain_id=domain_id)
         
-        folder = parentdir + '\\data\\dataset\\' + 'dpt_num_department_' + str(dpt_num_department)
+        folder = parentdir + '\\data\\dataset\\' + 'dpt_num_department_' + str(dpt_num_department) + 'domain_id_' + str(domain_id)
         
         #if we delete previous images
         if delete_images:

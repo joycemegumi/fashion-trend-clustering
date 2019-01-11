@@ -2,17 +2,15 @@
 """
 Created on Wed Oct 31 11:54:47 2018
 
-Class to, from the image of a product, identify similar products in the catalog
+Class to, from the image of an, identify similar items in the catalog
 
 @author: AI team
 """
 
-import collections
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 import io
 import numpy as np
 import os
-import pickle
 from sklearn.neighbors import NearestNeighbors
 import sqlite3
 from tensorflow.python.keras.applications.vgg19 import VGG19
@@ -47,8 +45,8 @@ sqlite3.register_converter("array", convert_array)
 
 class search_catalog():
     
-    def __init__(self, dpt_num_department=0):
-        self.dpt_num_department = dpt_num_department
+    def __init__(self, dataset):
+        self.dataset = dataset
         self.model = None
     
     #method to load VGG19 and Inception_Resnet models
@@ -69,23 +67,32 @@ class search_catalog():
             x = GlobalAveragePooling2D()(x)
             self.IR_model = Model(inputs=base_model.input, outputs=x)
     
-    #method to load features of each product
-    def _load_features(self, model='VGG', data_augmentation=True):
+    #method to load features of each item
+    def _load_features(self, model='VGG', data_augmentation=True, remove_not_white=False):
         #connect to the database
         conn = sqlite3.connect(parentdir + '\\data\\database\\features.db', detect_types=sqlite3.PARSE_DECLTYPES)
         cur = conn.cursor()
         
         #extract the features
         if data_augmentation:
-            cur.execute('SELECT pixl_id, mdl_id, features_' + model + ' FROM features_' + str(self.dpt_num_department) + ' WHERE active = ?', 
-                        (1,))
+            if remove_not_white:
+                cur.execute('SELECT img_id, item_id, features_' + model + ' FROM features_' + str(self.dataset) + ' WHERE active = ? AND white_background = ?', 
+                            (1,1))
+            else:
+                cur.execute('SELECT img_id, item_id, features_' + model + ' FROM features_' + str(self.dataset) + ' WHERE active = ?', 
+                            (1,))
+                
         else:
-            cur.execute('SELECT pixl_id, mdl_id, features_' + model + ' FROM features_' + str(self.dpt_num_department) + ' WHERE active = ? AND transformation = ?', 
-                        (1,''))
+            if remove_not_white:
+                cur.execute('SELECT img_id, item_id, features_' + model + ' FROM features_' + str(self.dataset) + ' WHERE active = ? AND transformation = ? AND white_background = ?', 
+                            (1,'000',1))
+            else:
+                cur.execute('SELECT img_id, item_id, features_' + model + ' FROM features_' + str(self.dataset) + ' WHERE active = ? AND transformation = ?', 
+                            (1,'000'))
         
         data = cur.fetchall()
         self.features = [i[2] for i in data]
-        self.mdls = [i[1] for i in data]
+        self.items = [i[1] for i in data]
         self.images = [i[0] for i in data]
         
         conn.close()
@@ -96,9 +103,10 @@ class search_catalog():
         X = np.array(self.features)
         self.kNN = NearestNeighbors(n_neighbors=np.min([50, X.shape[0]]), algorithm=algorithm, metric=metric).fit(X)
                 
-    #main method - identify most similar models
+    #main method - identify most similar items
     def run(self, path_image, model='VGG', k=5, load_model=True, load_features=True,
-            fit_model=True, data_augmentation=False, algorithm='brute', metric='cosine'):
+            fit_model=True, data_augmentation=False, algorithm='brute', metric='cosine',
+            nb_imgs=100, remove_not_white=False):
         
         self.path_to_img = path_image
         
@@ -109,51 +117,50 @@ class search_catalog():
         #load the features
         if load_features:
             self._load_features(model=model, 
-                                data_augmentation=data_augmentation)
+                                data_augmentation=data_augmentation,
+                                remove_not_white=remove_not_white)
             
         #fit the kNN model
         if fit_model:
             self._fit_kNN(algorithm=algorithm, metric=metric)
                   
-        #calculate the features of the image
+        #calculate the features of the images
         if model=='Inception_Resnet':
             img = image.load_img(path_image, target_size=(299, 299)) 
             img = image.img_to_array(img)  # convert to array
+#            if remove_background:
+#                img = utils.remove_background(img.astype(np.uint8))
             img = np.expand_dims(img, axis=0)
             img = ppIR(img)
             self.img_features = [self.IR_model.predict(img).flatten()] 
         else:
             img = image.load_img(path_image, target_size=(224, 224)) 
             img = image.img_to_array(img)  # convert to array
+#            if remove_background:
+#                img = utils.remove_background(img.astype(np.uint8))
             img = np.expand_dims(img, axis=0)
             img = ppVGG19(img)
             self.img_features = [self.VGG_model.predict(img).flatten()] 
                      
-        #find most similar images in the training set
+        #find most similar images in the catalog
         _, self.NN = self.kNN.kneighbors(self.img_features)
         
-        #identify most similar models
-        self.similar_models = [self.mdls[i] for i in self.NN[0]][:5*k]
-        self.similar_images = [self.images[i] for i in self.NN[0]][:5*k]
+        #identify most similar items
+        self.similar_items = [self.items[i] for i in self.NN[0]][:nb_imgs]
+        self.similar_images = [self.images[i] for i in self.NN[0]][:nb_imgs]
     
     def plot_similar(self):    
        
-        path_to_similar_mdls = []
+        path_to_similar_items = []
         for i in range(len(self.similar_images)):
-            if self.similar_models[i] not in self.similar_models[:i]: #remove duplicate models
-                split_id = str(self.similar_images[i]).split('000')
-                pixl_id = split_id[0]
-                #case where there are four or five consecutive zeros
-                if len(split_id)==2:
-                    if split_id[1][:2] == '00':
-                        pixl_id = pixl_id + '00'
-                    elif split_id[1][0] == '0':
-                        pixl_id = pixl_id + '0'
-                path = [parentdir + '/data/dataset/dpt_num_department_' + str(self.dpt_num_department) + '/' + str(self.similar_models[i]) + '_' + pixl_id + '.jpg']
-                path_to_similar_mdls = path_to_similar_mdls + path
+            if self.similar_items[i] not in self.similar_items[:i]: #remove duplicate items
+                split_id = str(self.similar_images[i]).rsplit('000')
+                img_id = split_id[0]
+                path = [parentdir + '/data/dataset/' + str(self.dataset) + '/' + str(self.similar_items[i]) + '_' + img_id + '.jpg']
+                path_to_similar_items = path_to_similar_items + path
         
         # Create figure with sub-plots.
-        utils.plot_similar(path_to_img=self.path_to_img, path_to_similar_mdls=path_to_similar_mdls)
+        utils.plot_similar(path_to_img=self.path_to_img, path_to_similar_items=path_to_similar_items)
         
     
 if __name__=='__main__':
@@ -161,8 +168,11 @@ if __name__=='__main__':
 #    image_path = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
 #    image_path = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
 #    image_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-    search = search_catalog(dpt_num_department=371)
-    search.run(image_path, model='Inception_Resnet', data_augmentation=True)
+#    image_path = parentdir + '/data/dataset/test/hockey_skates_example.jpeg'
+    
+    search = search_catalog(dataset='dpt_num_department_371_domain_id_0341')
+    search.run(image_path, model='Inception_Resnet', data_augmentation=True,
+               remove_not_white=True)
     search.plot_similar()
         
     
