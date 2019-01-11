@@ -93,7 +93,7 @@ class search_catalog():
         data = cur.fetchall()
         self.features = [i[2] for i in data]
         self.items = [i[1] for i in data]
-        self.images = [i[0] for i in data]
+        self.images = [i[0].split(',000')[0] for i in data]
         
         conn.close()
              
@@ -154,9 +154,7 @@ class search_catalog():
         path_to_similar_items = []
         for i in range(len(self.similar_images)):
             if self.similar_items[i] not in self.similar_items[:i]: #remove duplicate items
-                split_id = str(self.similar_images[i]).rsplit('000')
-                img_id = split_id[0]
-                path = [parentdir + '/data/dataset/' + str(self.dataset) + '/' + str(self.similar_items[i]) + '_' + img_id + '.jpg']
+                path = [parentdir + '/data/dataset/' + str(self.dataset) + '/' + self.similar_images[i]]
                 path_to_similar_items = path_to_similar_items + path
         
         # Create figure with sub-plots.
@@ -164,11 +162,11 @@ class search_catalog():
         
     
 if __name__=='__main__':
-    image_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
-#    image_path = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
-#    image_path = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
-#    image_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-#    image_path = parentdir + '/data/dataset/test/hockey_skates_example.jpeg'
+    image_path = parentdir + '/data/dataset/test/hockeyskatesexample2.jpg'
+#    image_path = parentdir + '/data/dataset/test/usedgoaliestick_example.jpg'
+#    image_path = parentdir + '/data/dataset/test/hockeystick_example.jpeg'
+#    image_path = parentdir + '/data/dataset/test/hockeystick_example_2.jpg'
+#    image_path = parentdir + '/data/dataset/test/hockeyskatesexample.jpeg'
     
     search = search_catalog(dataset='dpt_num_department_371_domain_id_0341')
     search.run(image_path, model='Inception_Resnet', data_augmentation=True,

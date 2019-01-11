@@ -132,7 +132,7 @@ def visual_search(img):
         if search.similar_items[i] not in search.similar_items[:i]:#we remove duplicates
             k+=1
             print('Most similar item number', k, ': ' + str(search.similar_items[i]))
-            if k+1 == args.number:
+            if k == args.number:
                 break
 
 #run the proper function given the --task argument passed to the function   

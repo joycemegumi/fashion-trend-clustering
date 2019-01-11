@@ -155,21 +155,16 @@ class find_similar():
         folder = parentdir + '\\data\\dataset\\' + self.dataset
 
         #extract the id of the items and of the images in the dataset
-        self.active_items = [(i.split('_')[0], i.split('_')[1].split('.')[0]) for i in os.listdir(folder)]
-        
-        #remove images associated to more than one item
-        images = [str(i[1]) for i in self.active_items]
-        duplicates = [item for item, count in collections.Counter(images).items() if count > 1]
-        images = [i for i in os.listdir(folder) if (i.split('_')[0], i.split('_')[1].split('.')[0]) in self.active_items and i.split('_')[1].split('.')[0] not in duplicates]
-        items = list(set([i.split('_')[0] for i in images]))
-        self.item_to_img = {items[i]:[j.split('_')[1].split('.')[0] for j in images if j.split('_')[0] == items[i]] for i in range(len(items))} #dictionary item ID: img ID
-        self.img_to_item = {i.split('_')[1].split('.')[0]:i.split('_')[0] for i in images}
-        
+        images = os.listdir(folder)
+        items = [i.split('_')[0].split('.')[0] for i in images]
+        self.item_to_img = {items[i]:[j for j in images if j.split('_')[0].split('.')[0] == items[i]] for i in range(len(items))} #dictionary item ID: img ID
+        self.img_to_item = {i:i.split('_')[0].split('.')[0] for i in images}
+                
         #loop through the images, to extract their features.
         cur.execute('UPDATE features_' + str(self.dataset) + ' SET active = ?', (0,))
         ki = 0
         for i in images:
-            img_ids = [i.split('_')[1].split('.')[0] + j for j in transformations]
+            img_ids = [i + ',' + j for j in transformations]
             cur.execute('SELECT img_id, item_id FROM features_' + str(self.dataset) + ' WHERE img_id IN ({})'.format(','.join('?' * len(transformations))), 
                         img_ids)
             data=cur.fetchall()
@@ -203,7 +198,7 @@ class find_similar():
                         white_background = 0    
                     
                     cur.execute('INSERT INTO features_' + str(self.dataset) + ' (img_id, item_id, features_VGG, features_Inception_Resnet, transformation, white_background, active) VALUES (?,?,?,?,?,?,?)', 
-                            (img_ids[j], i.split('_')[0], features_VGG, features_IR, transformations[j], white_background, 1))
+                            (img_ids[j], i.split('_')[0].split('.')[0], features_VGG, features_IR, transformations[j], white_background, 1))
                                             
             ki += 1
             if ki % 100 == 1:
@@ -237,8 +232,8 @@ class find_similar():
         
         data=cur.fetchall()
         self.features = [i[2] for i in data]            
-        self.images = [str(i[0]).rsplit('000')[0] for i in data]
-        self.items = [str(i[1]) for i in data]
+        self.images = [i[0].rsplit(',000')[0] for i in data]
+        self.items = [i[1] for i in data]
         
         X = np.array(self.features)
         print('Calculating nearest neighbors')
@@ -265,10 +260,10 @@ class find_similar():
         
         #path to an image of this item
         folder = parentdir + '\\data\\dataset\\' + self.dataset
-        path_to_img = folder + '\\' + str(itm) + '_' + str(self.item_to_img[itm][0]) + '.jpg'
+        path_to_img = folder + '\\' + self.item_to_img[itm][0]
         
-        #path to images of models similar to this one
-        path_to_similar_items = [folder + '/' + str(i) + '_' + str(self.item_to_img[i][0]) + '.jpg' for i in self.similar_items[itm]]
+        #path to images of items similar to this one
+        path_to_similar_items = [folder + '/' + self.item_to_img[i][0] for i in self.similar_items[itm]]
         
         # Create figure with sub-plots.
         utils.plot_similar(path_to_img=path_to_img, path_to_similar_items=path_to_similar_items, img_name=str(itm))
