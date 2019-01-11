@@ -2,7 +2,7 @@
 """
 Created on Wed Oct 31 11:54:47 2018
 
-Class to, from the image of an, identify similar items in the catalog
+Class to, from the image of an, identify similar items in the dataset
 
 @author: AI team
 """
@@ -142,7 +142,7 @@ class search_catalog():
             img = ppVGG19(img)
             self.img_features = [self.VGG_model.predict(img).flatten()] 
                      
-        #find most similar images in the catalog
+        #find most similar images in the dataset
         _, self.NN = self.kNN.kneighbors(self.img_features)
         
         #identify most similar items
