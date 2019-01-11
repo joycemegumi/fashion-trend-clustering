@@ -21,54 +21,8 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from utils import utils
 
-img_path = parentdir + '/data/dataset/test/hockey_skates_example_2.jpg'
-#img_path = parentdir + '/data/dataset/test/used_goalie_stick_example.jpg'
-#img_path = parentdir + '/data/dataset/test/hockey_stick_example.jpeg'
-#img_path = parentdir + '/data/dataset/test/hockey_stick_example_2.jpg'
-#img_path = parentdir + '/data/dataset/test/hockey_skates_example.jpeg'
+img_path = parentdir + '/data/dataset/test/hockeyskatesexample_2.jpg'
 
-#
-#image = cv2.imread(img_path)
-#r = 150.0 / image.shape[1]
-#dim = (150, int(image.shape[0] * r))
-#resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-#coloured = resized.copy()
-#lower_white = np.array([220, 220, 220], dtype=np.uint8)
-#upper_white = np.array([255, 255, 255], dtype=np.uint8)
-#mask = cv2.inRange(resized, lower_white, upper_white) # could also use threshold
-#coloured[mask == 255] = (255, 255, 255)
-#cv2.imshow(coloured)
-##res = cv2.bitwise_not(resized, resized, mask)
-##cv2.imshow('res', res) # gives black background
-
-# opencv loads the image in BGR, convert it to RGB
-#img = cv2.cvtColor(cv2.imread(img_path),
-#                   cv2.COLOR_BGR2RGB)
-#lower_white = np.array([220, 220, 220], dtype=np.uint8)
-#upper_white = np.array([255, 255, 255], dtype=np.uint8)
-#mask = cv2.inRange(img, lower_white, upper_white)  # could also use threshold
-#mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))  # "erase" the small white points in the resulting mask
-#mask = cv2.bitwise_not(mask)  # invert mask
-#
-## load background (could be an image too)
-#bk = np.full(img.shape, 255, dtype=np.uint8)  # white bk
-#
-## get masked foreground
-#fg_masked = cv2.bitwise_and(img, img, mask=mask)
-#
-## get masked background, mask must be inverted 
-#mask = cv2.bitwise_not(mask)
-#bk_masked = cv2.bitwise_and(bk, bk, mask=mask)
-#
-## combine masked foreground and masked background 
-#final = cv2.bitwise_or(fg_masked, bk_masked)
-#mask = cv2.bitwise_not(mask)  # revert mask to original
-#
-#cv2.imshow('image',final)
-
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 
 #== Parameters =======================================================================
 BLUR = 21
@@ -80,7 +34,6 @@ MASK_COLOR = (0.0,0.0,1.0) # In BGR format
 
 
 #== Processing =======================================================================
-
 
 #-- Read image -----------------------------------------------------------------------
 img = cv2.imread(img_path)
@@ -152,6 +105,6 @@ c_blue[mask_normalized<0.01]=1
 
 img_b = cv2.merge((c_red, c_green, c_blue))
 
-# show on screen (optional in jupiter)
+# display
 plt.imshow(img_b)
 plt.show()
