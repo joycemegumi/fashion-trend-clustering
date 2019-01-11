@@ -1,5 +1,5 @@
 # image-similarity
-Library built to perform two tasks: (1) find the items in a dataset most similar to a given one based on their images, and (2) from the image taken by a user, find the items in the dataset which look the most similar. The application of (1) is to build a recommendation system based on item similarity. The application of (2) is to build a visual search engine (similarity to https://images.google.com/), to enable users the possibility to search for items based on images.
+Library built to perform two tasks: (1) find the items in a dataset most similar to a given one based on their images, and (2) from the image taken by a user, find the items in the dataset which look the most similar. The application of (1) is to build a recommendation system based on item similarity. The application of (2) is to build a visual search engine (similarity to https://images.google.com/), to give users the ability to search for items based on images.
 
 The algorithm used to calculate image similarity is based on transfer learning. In a nutshell, we compute the features of each image using VGG19 and Inception_Resnet_V2 models. We then calculate the similarity of each image given the cosine distance between their feature vectors, and we rank the images with the highest similarity.
 
@@ -25,8 +25,9 @@ data/
       helmet2.jpg
       stick1_1.jpg
       stick1_2.jpg
+      hockeybag.jpg
 ```
-The library will in this case consider that the dataset is composed of three items (helmet1, helmet2 and stick1), and that the item stick1 is associated to two images (stick1_1.jpg and stick1_2.jpg).
+The library will in this case consider that the dataset is composed of four items (helmet1, helmet2, stick1 and hockeybag), and that the item stick1 is associated to two images (stick1_1.jpg and stick1_2.jpg).
 
 
 ## Services
@@ -39,53 +40,45 @@ This will loop through the images found in the dataset of the name given as the 
 
 Data augmentation can be enabled by passing 1 as the --data_augmentation argument - in this case, the features will be calculated for the original image, as well as the image fliped left-right and up-down, and the image rotated by angles of 90, 180 and 270 degrees. 
 
-After the features have been calculated, the library will loop through all the items, and find the items in the rest of the catalog which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, VGG19 (VGG) and Inception_Resnet_V2 (Inception_Resnet)). The results are saved in a a file named {DATASET}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {item: [list of most similar items]}. This dictionray provides, for each item, the list of items which are the most similar. The lenght of this list is of 10 by default, but can be controlled using the --number argument.
+After the features have been calculated, the library will loop through all the items, and find the items in the rest of the dataset which look the most similar. The similarity is based on the cosine distance between the feature vectors calculated using the model provided as the --transfer_model argument (two models are currently supported, VGG19 (VGG) and Inception_Resnet_V2 (Inception_Resnet)). The results are saved in a a file named {DATASET}\_model_\{TRANSFER_MODEL}.pickle, found in the data/trained_models directory. This file contains a dictionary {item: [list of most similar items]}. This dictionray provides, for each item, the list of items which are the most similar. The lenght of this list is of 10 by default, but can be controlled using the --number argument.
 
 ## Show the items most similar to a given one
 Once the dictionary of most similar items has been built (see the previous section), we can run the following call to print the most similar items to a given one.
 ```
-python main.py --task show_similar_items --product_id {PRODUCT_ID} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
+python main.py --task show_similar_items --item {ITEM} --dataset {DATASET} --transfer_model {TRANSFER_MODEL} --number {NUMBER}
 ```
-When making this call, the library first opens the dictionary of most similar products. If the argument --product_id is not provided, one product id is picked randomly, and the most similar products are returned. 
+When making this call, the library first opens the dictionary of most similar items. If the argument --item is not provided, one item is picked randomly, and the most similar items are returned. 
 
-For example, to get the most similar products to product 8401523 (a hockey stick), based on model Inception_Resnet_V2, you can run the following call:
+For example, let's assume that you have built the dictionary of most similar items (as described in the following section) for the hockey_products dataset (see the *Dataset format* section). To get the most similar items to the item helmet1, based on the features calculated by Inception_Resnet model, you could run the following call:
 ```
-python main.py --task show_similar_products --product_id 8401523 --dpt_number 371 --transfer_model Inception_Resnet
+python main.py --task show_similar_item --item helmet1 --dataset hockey_products --transfer_model Inception_Resnet
 ```
-The response should look like:
+The response would look like:
 ```
-Most similar product number 1 : 8401522
-Most similar product number 2 : 8401525
-Most similar product number 3 : 8401526
-Most similar product number 4 : 8401482
-Most similar product number 5 : 8397732
+Most similar items to item: helmet1
+Number 1 : helmet2
+Number 2 : hockeybag
+Number 3 : stick1
 ```
-In this example, the algorithm indeed found that the most similar products to product 8401523 are the four other hockey sticks in the catalog (products 8401522, 8401525, 8401526 and 8401482). 
 
-## Perform a visual search of the catalog
-Once the features for all the images have been calculated (see the section *Calculation of the dictionary of most similar products*), the products most similar to a given image can be found by providing the path to the image:
+
+## Perform a visual search of the dataset
+Once the features for all the images have been calculated (see the section *Calculation of the dictionary of most similar items*), the items most similar to a given image can be found by providing the path to the image:
 ```
-python main.py --task search_products --img {IMG} --dpt_number {DPT_NUMBER} --transfer_model {TRANSFER_MODEL}
+python main.py --task visual_search --img {IMG} --dataset {DATASET} --transfer_model {TRANSFER_MODEL} --data_augmentation {DATA_AUGMENTATION}
 ```
 where {IMG} is the path to the given image.
 
-For instance, let's say you have the following image of your used pair of hockey skates:
-![Alt text](test/test_image.jpg?raw=true "Title")
-
-And you want to find the products in the catalog with the most similar images (including the images produced by data augmentation). You can run the following command:
+For instance, let's say you have the image of a hockey stick, located at path ./test/images/stick.jpg. You want to find the three items in the hockey_products dataset which look the most similar, based on the feature vectors calculated using Inception_Resnet model and considering the images obtained by data augmentation. You can then run the following call:
 ```
-python main.py --task search_products --img {IMG} --transfer_model Inception_Resnet --dpt_number 371 --data_augmentation 1
+python main.py --task visual_search --img ./test/images/stick.jpg --dataset hockey_products --transfer_model Inception_Resnet --data_augmentation 1 --number 3
 ```
 The response could look like:
 ```
-Most similar product number 1 : 8524152
-Most similar product number 2 : 8156286
-Most similar product number 3 : 8514405
-Most similar product number 4 : 8156287
-Most similar product number 5 : 8184005
-Most similar product number 6 : 8524150
+Most similar item number 1 : stick1
+Most similar item number 2 : helmet2
+Most similar item number 3 : helmet1
 ```
-In this example, the library successfully found the hockey skates in the catalog as the most similar products.
 
 ## Roadmap
-The roadmap for this project includes building a 100% open-source version of the library, as well as a blog post on developers.decathlon.com. Some other improvements which could be done include the possibility to remove the background color in the pictures taken by the user (when the catalog only contains products with a white background), and identifying the most similar products using an ensemble approach (when there is more than one picture per product in the catalog).
+Future improvements of the library in the work includes enabling the removal of the background color in images taken by users, and improving the ensemble approach used in the presence of multiple images by item in the dataset.
