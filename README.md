@@ -8,7 +8,7 @@ For more information, please contact aicanada@decathlon.net
 ## Getting started
 Make sure you have python 3 and the required libraries properly installed (pip install requirements.txt). You can then git clone the project to the desired location:
 ```
-git clone https://github.com/decathloncanada/image-classification.git
+git clone https://github.com/decathloncanada/image-similarity.git
 ```
 
 ## Dataset format
