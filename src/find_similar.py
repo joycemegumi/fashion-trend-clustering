@@ -270,6 +270,6 @@ class find_similar():
         
         
 if __name__ == '__main__':
-    sim = find_similar(dataset='dpt_num_department_371_domain_id_0341')
+    sim = find_similar(dataset='dpt_num_department_0_domain_id_0341')
     sim.fit(k=8, model='Inception_Resnet', save_similar_items=True, data_augmentation=True)
     sim.plot_similar()

@@ -11,7 +11,7 @@ import os
 import pickle
 from random import randint
 
-from src import extract_images as ext
+#from src import extract_images as ext
 from src import find_similar as fs
 from src import search_catalog as sc
 
