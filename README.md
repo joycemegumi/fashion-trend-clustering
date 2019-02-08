@@ -6,7 +6,7 @@ The algorithm used to calculate image similarity is based on transfer learning. 
 For more information, please contact aicanada@decathlon.net
 
 ## Getting started
-Make sure you have python 3 and the required libraries properly installed (pip install requirements.txt). You can then git clone the project to the desired location:
+Make sure you have python 3 and the required libraries properly installed (to install the libraries, run the command pip install -r requirements.txt from, for instance, an Anaconda Prompt). You can then git clone the project to the desired location:
 ```
 git clone https://github.com/decathloncanada/image-similarity.git
 ```
