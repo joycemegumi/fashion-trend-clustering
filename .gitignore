@@ -10,4 +10,5 @@ data/trained_models/*
 data/database/*
 app.py
 !*data/dataset/__init__.py
+!*data/dataset/example_dataset/*
 !*data/database/__init__.py
