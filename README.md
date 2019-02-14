@@ -51,7 +51,7 @@ When making this call, the library first opens the dictionary of most similar it
 
 For example, let's assume that you have built the dictionary of most similar items (as described in the following section) for the hockey_products dataset (see the *Dataset format* section). To get the most similar items to the item helmet1, based on the features calculated by Inception_Resnet model, you could run the following call:
 ```
-python main.py --task show_similar_item --item helmet1 --dataset hockey_products --transfer_model Inception_Resnet
+python main.py --task show_similar_items --item helmet1 --dataset hockey_products --transfer_model Inception_Resnet
 ```
 The response would look like:
 ```
