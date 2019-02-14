@@ -3,7 +3,7 @@ Library built to perform two tasks: (1) find the items in a dataset most similar
 
 The algorithm used to calculate image similarity is based on transfer learning. In a nutshell, we compute the features of each image using VGG19 and Inception_Resnet_V2 models. We then calculate the similarity of each image given the cosine distance between their feature vectors, and we rank the images with the highest similarity.
 
-For more information, please contact aicanada@decathlon.net
+For more information, please read [our blog post](https://medium.com/decathlondevelopers/building-a-visual-search-algorithm-in-a-few-steps-using-transfer-learning-ea00cb9fe49c) or contact aicanada@decathlon.net
 
 ## Getting started
 Make sure you have python 3 and the required libraries properly installed (to install the libraries, run the command pip install -r requirements.txt from, for instance, an Anaconda Prompt). You can then git clone the project to the desired location:
