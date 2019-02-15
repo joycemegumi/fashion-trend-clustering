@@ -9,6 +9,7 @@ Main function to find most similar items to a given item or image
 
 import argparse
 import os
+import sys
 import inspect
 import pickle
 
@@ -17,38 +18,13 @@ from src import find_similar as fs
 from src import search_catalog as sc
 
 ROOTDIR = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-DATA_TRAINING_PATH = '/data/trained_models'
-
-# #verify the format of the arguments
-# if args.task not in ['fit', 'show_similar_items', 'visual_search']:
-#     print('task not supported')
-#
-
-# if args.task in ['fit', 'visual_search']:
-#     if args.data_augmentation == 1:
-#         data_augmentation = True
-#     elif args.data_augmentation == 0:
-#         data_augmentation = False
-#     else:
-#         print('dataset_augmentation argument is not 0 or 1')
-#         args.task = 'pass'
-
-# if args.dataset is not None:
-#     if not os.path.isdir(ROOTDIR + '\\data\\dataset\\' + args.dataset):
-#         print('dataset does not exists')
-#         args.task = 'pass'
-
-# if args.img is not None:
-#     if not os.path.isfile(args.img):
-#         print('file path to the image does not exists')
-#         args.task = 'pass'
+DATA_TRAINING_PATH = '/data/trained_models/'
 
 # if args.transfer_model not in ['VGG', 'Inception_Resnet']:
 #     print('transfer_model not supported')
 #     args.task = 'pass'
 
-
-def fit(arguments, data_augmentation):
+def fit(arguments):
     """
     Function to build the dictionary of most similar items
     """
@@ -62,9 +38,12 @@ def show_similar_items(arguments):
     Function to show the most similar items to a given item_id
     """
     #load the similar items dictionary
-    with open(ROOTDIR + DATA_TRAINING_PATH + str(arguments.dataset) + '_model_' + arguments.transfer_model + '.pickle', 'rb') as pickle_file:
-        similar_items = pickle.load(pickle_file)
-
+    try:
+        with open(ROOTDIR + DATA_TRAINING_PATH + str(arguments.dataset) + '_model_' + arguments.transfer_model + '.pickle', 'rb') as pickle_file:
+            similar_items = pickle.load(pickle_file)
+    except:
+        print("Error {0} Not exist.".format(ROOTDIR + DATA_TRAINING_PATH + str(arguments.dataset) + '_model_' + arguments.transfer_model + '.pickle'))
+        sys.exit(1)
     #if no item id is provided, randomly select one
     all_items = [i for i in similar_items]
     if arguments.item is None:
@@ -74,9 +53,9 @@ def show_similar_items(arguments):
 
     #verify that the item is in the dictionary
     if item in all_items:
-        print('Most similar items to item:', item)
+        print('Most Similar items to item: {0}'.format(item))
         for i in range(len(similar_items[item])):
-            print('Number', i+1, ': ' + similar_items[item][i])
+            print('Number{0}: {1}'.format(i+1, similar_items[item][i]))
             if i+1 == arguments.number:
                 break
 
@@ -89,7 +68,10 @@ def visual_search(arguments):
     Function to find the item most similar to an image
     """
     search = sc.search_catalog(dataset=arguments.dataset)
-    search.run(arguments.img, load_features=True, model=arguments.transfer_model, data_augmentation=arguments.data_augmentation)
+    search.run(arguments.img, \
+        load_features=True,
+        model=arguments.transfer_model,
+        data_augmentation=arguments.data_augmentation)
     k = 0
     for i in range(len(search.similar_items)):
         if search.similar_items[i] not in search.similar_items[:i]:#we remove duplicates
@@ -116,15 +98,15 @@ def get_option():
                         help="""
                         If we want (1) or not (0) to consider data augmentation (lr/ud flipping and 90,180,270 degree rotations)
                         """)
-    parser.add_argument('--dataset', type=str, default=None,
+    parser.add_argument('--dataset', type=str, default='/data/dataset/',
                         help="""
                         Name of the dataset containing the image of all the items
                         """)
-    parser.add_argument('--item', type=str, default=None,
+    parser.add_argument('--item', type=str,
                         help="""
                         ID of the item for which we want to show the most similar items in the dataset
                         """)
-    parser.add_argument('--img', type=str, default=None,
+    parser.add_argument('--img', type=str,
                         help="""
                         Path to the image for which we want to identify the most similar items in the catalog
                         """)
@@ -139,8 +121,6 @@ def get_option():
                         """)
 
     return parser.parse_args()
-
-
 
 def main():
     """
