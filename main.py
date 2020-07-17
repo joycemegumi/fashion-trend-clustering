@@ -71,8 +71,9 @@ if args.task in ['fit', 'visual_search']:
         print('dataset_augmentation argument is not 0 or 1')
         args.task = 'pass'
 
-if args.dataset is not None:    
-    if not os.path.isdir(currentdir + '\\data\\dataset\\' + args.dataset):
+if args.dataset is not None:
+    print(currentdir + '/data/dataset/' + args.dataset)
+    if not os.path.isdir(currentdir + '/data/dataset/' + args.dataset):
         print('dataset does not exists')
         args.task = 'pass'
 
@@ -94,7 +95,7 @@ def fit():
 #function to show the most similar items to a given item_id 
 def show_similar_items():
     #load the similar items dictionary
-    path = '\\data\\trained_models\\'
+    path = '/data/trained_models/'
     with open(currentdir + path + str(args.dataset) + '_model_' + args.transfer_model + '.pickle', 'rb') as file:
         similar_items = pickle.load(file)   
         
@@ -133,7 +134,8 @@ def visual_search(img):
 #run the proper function given the --task argument passed to the function   
 if args.task == 'fit':
     fit()
-    
+
+
 elif args.task == 'show_similar_items':
     show_similar_items()
     

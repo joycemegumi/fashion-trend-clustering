@@ -70,7 +70,7 @@ class search_catalog():
     #method to load features of each item
     def _load_features(self, model='VGG', data_augmentation=True, remove_not_white=False):
         #connect to the database
-        conn = sqlite3.connect(parentdir + '\\data\\database\\features.db', detect_types=sqlite3.PARSE_DECLTYPES)
+        conn = sqlite3.connect(parentdir + '/data/database/features.db', detect_types=sqlite3.PARSE_DECLTYPES)
         cur = conn.cursor()
         
         #extract the features
@@ -144,7 +144,7 @@ class search_catalog():
                      
         #find most similar images in the dataset
         _, self.NN = self.kNN.kneighbors(self.img_features)
-        
+        print(self.kNN.kneighbors(self.img_features))
         #identify most similar items
         self.similar_items = [self.items[i] for i in self.NN[0]][:nb_imgs]
         self.similar_images = [self.images[i] for i in self.NN[0]][:nb_imgs]

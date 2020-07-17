@@ -79,7 +79,7 @@ class find_similar():
             
         #if we want to save the similar items dictionary
         if save_similar_items:
-            path = parentdir + '\\data\\trained_models\\'
+            path = parentdir + '/data/trained_models/'
             if not os.path.exists(path):
                 os.makedirs(path)
             with open(path + self.dataset + '_model_' + model + '.pickle', 'wb') as file:
@@ -146,16 +146,19 @@ class find_similar():
         IR_model = Model(inputs=base_model.input, outputs=x)
                
         #connect to the database, and create the features table if it does not exists
-        os.makedirs(parentdir + '\\data\\database', exist_ok=True)
-        conn = sqlite3.connect(parentdir + '\\data\\database\\features.db', detect_types=sqlite3.PARSE_DECLTYPES)
+        os.makedirs(parentdir + '/data/database', exist_ok=True)
+        conn = sqlite3.connect(parentdir + '/data/database/features.db', detect_types=sqlite3.PARSE_DECLTYPES)
         cur = conn.cursor()
         cur.execute('CREATE TABLE IF NOT EXISTS features_' + str(self.dataset) + ' (img_id TEXT PRIMARY KEY, item_id TEXT, features_VGG array, features_Inception_Resnet array, transformation CHARACTER(20), white_background INTEGER, active INTEGER)')
         
         #create a item ID: list of associated image IDs dictionary, useful to identify most similar items after computation
-        folder = parentdir + '\\data\\dataset\\' + self.dataset
+        folder = parentdir + '/data/dataset/' + self.dataset
 
         #extract the id of the items and of the images in the dataset
         images = os.listdir(folder)
+        if '.DS_Store' in images:
+            images.remove('.DS_Store')
+        print(images)
         items = [i.split('_')[0].split('.')[0] for i in images]
         self.item_to_img = {items[i]:[j for j in images if j.split('_')[0].split('.')[0] == items[i]] for i in range(len(items))} #dictionary item ID: img ID
         self.img_to_item = {i:i.split('_')[0].split('.')[0] for i in images}
@@ -169,7 +172,7 @@ class find_similar():
                         img_ids)
             data=cur.fetchall()
 
-            path = folder + '\\' + i
+            path = folder + '/' + i
             img_VGG = image.load_img(path, target_size=(224, 224)) 
             img_IR = image.load_img(path, target_size=(299, 299)) 
                               
@@ -222,8 +225,8 @@ class find_similar():
         self._calculate_features(data_augmentation=data_augmentation)
         
         #connect to the datbase
-        os.makedirs(parentdir + '\\data\\database', exist_ok=True)
-        conn = sqlite3.connect(parentdir + '\\data\\database\\features.db', detect_types=sqlite3.PARSE_DECLTYPES)
+        os.makedirs(parentdir + '/data/database', exist_ok=True)
+        conn = sqlite3.connect(parentdir + '/data/database/features.db', detect_types=sqlite3.PARSE_DECLTYPES)
         cur = conn.cursor()
         
         #build the features numpy array, list of images and list of items
@@ -259,8 +262,8 @@ class find_similar():
             itm = self.items[randint(0, len(self.items))]
         
         #path to an image of this item
-        folder = parentdir + '\\data\\dataset\\' + self.dataset
-        path_to_img = folder + '\\' + self.item_to_img[itm][0]
+        folder = parentdir + '/data/dataset/' + self.dataset
+        path_to_img = folder + '/' + self.item_to_img[itm][0]
         
         #path to images of items similar to this one
         path_to_similar_items = [folder + '/' + self.item_to_img[i][0] for i in self.similar_items[itm]]
