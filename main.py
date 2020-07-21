@@ -7,7 +7,7 @@ Main function to find most similar items to a given item or image
 @author: AI team
 """
 import argparse
-import os
+import shutil, os
 import pickle
 from random import randint
 
@@ -105,16 +105,28 @@ def show_similar_items():
         item = all_items[randint(0, len(all_items))]
     else:
         item = args.item
+
+    destination = os.path.join('.', 'data', 'output', item)
+    try:
+        os.makedirs(destination, exist_ok=True)
+    except OSError:
+        print ("Creation of the directory %s failed" % destination)
+    else:
+        print ("Successfully created the directory %s " % destination)
         
     #verify that the item is in the dictionary
     if item in all_items:
         #print the results
-        print('Most similar items to item:', item)
+        print('Most similar items to item:', os.path.join('.', 'data', 'dataset', 'fashion_data', item + '.jpg'))
         for i in range(len(similar_items[item])):
-            print('Number', i+1, ': ' + similar_items[item][i])
+            source = os.path.join('.', 'data', 'dataset', 'fashion_data', similar_items[item][i] + '.jpg')
+            #copy and move to output folder
+            
+            shutil.copy(source, os.path.join(destination, str(i+1) + '-' + similar_items[item][i] + '.jpg'))
+            print('Number', i+1, ': ' + source)
             if i+1 == args.number:
                 break
-            
+        print("Files copied into:", destination)
     else:
         print('Item', item, 'not recognized')
         
@@ -124,10 +136,12 @@ def visual_search(img):
     search.run(img, load_features=True, model=args.transfer_model, data_augmentation=data_augmentation) 
     #print the results
     k=0
+    print(search.distances, search.NN)
+    #search.plot_similar()
     for i in range(len(search.similar_items)):
         if search.similar_items[i] not in search.similar_items[:i]:#we remove duplicates
             k+=1
-            print('Most similar item number', k, ': ' + str(search.similar_items[i]))
+            print('Most similar item number', k, ': ' + os.path.join('.', 'data', 'dataset', 'fashion_data', search.similar_items[i] + '.jpg'))
             if k == args.number:
                 break
 
@@ -135,10 +149,8 @@ def visual_search(img):
 if args.task == 'fit':
     fit()
 
-
 elif args.task == 'show_similar_items':
     show_similar_items()
     
 elif args.task == 'visual_search':
     visual_search(args.img)
-    

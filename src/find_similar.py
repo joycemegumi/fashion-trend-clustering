@@ -12,6 +12,7 @@ import io
 import numpy as np
 import os
 import pickle
+import scipy
 from random import randint
 from scipy.ndimage import rotate
 from sklearn.neighbors import NearestNeighbors

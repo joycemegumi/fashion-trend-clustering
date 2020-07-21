@@ -143,10 +143,11 @@ class search_catalog():
             self.img_features = [self.VGG_model.predict(img).flatten()] 
                      
         #find most similar images in the dataset
-        _, self.NN = self.kNN.kneighbors(self.img_features)
-        print(self.kNN.kneighbors(self.img_features))
+        self.distances, self.NN = self.kNN.kneighbors(self.img_features)
         #identify most similar items
+
         self.similar_items = [self.items[i] for i in self.NN[0]][:nb_imgs]
+
         self.similar_images = [self.images[i] for i in self.NN[0]][:nb_imgs]
     
     def plot_similar(self):    
