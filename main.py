@@ -117,11 +117,13 @@ def show_similar_items():
     #verify that the item is in the dictionary
     if item in all_items:
         #print the results
-        print('Most similar items to item:', os.path.join('.', 'data', 'dataset', 'fashion_data', item + '.jpg'))
+        subject_source = os.path.join('.', 'data', 'dataset', 'fashion_data', item + '.jpg')
+        print('Most similar items to item:', subject_source)
+        #copy and move subject source to folder
+        shutil.copy(subject_source, os.path.join(destination, str(0) + '-' + item + '.jpg'))
         for i in range(len(similar_items[item])):
             source = os.path.join('.', 'data', 'dataset', 'fashion_data', similar_items[item][i] + '.jpg')
             #copy and move to output folder
-            
             shutil.copy(source, os.path.join(destination, str(i+1) + '-' + similar_items[item][i] + '.jpg'))
             print('Number', i+1, ': ' + source)
             if i+1 == args.number:
