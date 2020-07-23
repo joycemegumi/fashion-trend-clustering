@@ -131,6 +131,8 @@ def show_similar_items():
         print("Files copied into:", destination)
     else:
         print('Item', item, 'not recognized')
+    # search = sc.search_catalog(dataset=args.dataset)
+    # search.plot_similar()
         
 #function to find the item most similar to an image
 def visual_search(img):
@@ -138,8 +140,8 @@ def visual_search(img):
     search.run(img, load_features=True, model=args.transfer_model, data_augmentation=data_augmentation) 
     #print the results
     k=0
+    # search.plot_similar()
     print(search.distances, search.NN)
-    #search.plot_similar()
     for i in range(len(search.similar_items)):
         if search.similar_items[i] not in search.similar_items[:i]:#we remove duplicates
             k+=1
