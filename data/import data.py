@@ -1,21 +1,19 @@
 import os
-
+#Defining a function to rename our images by brand and nummber
 def main(): 
-    store = 'ZARA'
-    # wd = './Users/joycemegumi/Documents/GitHub/image-similarity/data/dataset/Dresses_ASOS 
+    #Store name is changed each time
+    store = 'TopShop'
     wd = os.path.join('./data', 'dataset', 'Dresses_' + store)
-    #print(os.listdir(wd))
     print(wd)
     for count, filename in enumerate(os.listdir(wd)):
         print(filename)
+        # If the filename includes a duplicate (1) then skip it and continue to the next filename
         if '(1)' in filename:
             continue
         dst = os.path.join('data', 'dataset','fashion_data', store + "-" + str(count+1) + ".jpg")
         src = os.path.join(wd, filename)
-        # dst ='Dresses_ASOS'+ dst 
-          
-        # rename() function will 
-        # rename all the files 
+
+        # rename() function will rename all the files 
         os.rename(src, dst) 
   
 # Driver Code 
