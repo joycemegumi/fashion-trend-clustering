@@ -13,7 +13,7 @@ def main():
         dst = os.path.join('data', 'dataset','fashion_data', store + "-" + str(count+1) + ".jpg")
         src = os.path.join(wd, filename)
 
-        # rename() function will rename all the files 
+        # rename() function will rename all the files and move them
         os.rename(src, dst) 
   
 # Driver Code 
