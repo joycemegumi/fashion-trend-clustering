@@ -2,8 +2,8 @@ import os
 #Defining a function to rename our images by brand and nummber
 def main(): 
     #Store name is changed each time
-    store = 'TopShop'
-    wd = os.path.join('./data', 'dataset', 'Dresses_' + store)
+    store = 'asos'
+    wd = os.path.join('./data', 'dataset', 'Dresses-' + store)
     print(wd)
     for count, filename in enumerate(os.listdir(wd)):
         print(filename)
